@@ -1593,7 +1593,7 @@ function startDahuaStream() {
   ];
 
   console.log(`[Dahua] Connecting to ${DAHUA_IP}...`);
-  curlProcess = spawn('curl.exe', args, {
+  curlProcess = spawn('curl', args, {
     shell: false,
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
