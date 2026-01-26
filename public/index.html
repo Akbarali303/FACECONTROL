@@ -4188,9 +4188,15 @@
 
             function updateUsersFromEvent(event) {
                 if (!event || event.code !== 'AccessControl') {
-                    console.log('[Event] Skipping non-AccessControl event:', event?.code);
                     return;
                 }
+
+                // Deduplication check
+                if (event.id && processedEventIds.has(event.id)) {
+                    return;
+                }
+                if (event.id) processedEventIds.add(event.id);
+
                 const data = event.data || {};
                 const key = computeUserKey(data);
                 if (!key) {
@@ -4873,6 +4879,41 @@
             }
 
             let currentUser = null;
+            const processedEventIds = new Set(); // For deduplication
+
+            // Load today's events from backend
+            async function loadTodayEvents() {
+                try {
+                    const response = await fetch('/api/access-events/today', {
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.events) {
+                            console.log(`[API] Loaded ${result.events.length} events for today`);
+                            // Process history in correct order (DESC from API, so reverse or just process)
+                            // We process them to build the current state
+                            result.events.reverse().forEach(eventData => {
+                                // Reconstruct event structure for updateUsersFromEvent
+                                const event = {
+                                    id: eventData.id,
+                                    code: 'AccessControl',
+                                    action: eventData.eventType,
+                                    receivedAt: eventData.timestamp,
+                                    data: eventData.event_data
+                                };
+
+                                if (event.id) processedEventIds.add(event.id);
+                                updateUsersFromEvent(event);
+                                updateCurrentSummary(event);
+                            });
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error loading today\'s events:', err);
+                }
+            }
+
 
             // Check authentication on page load
             async function checkAuth() {
@@ -5258,13 +5299,15 @@
             });
 
             // Check auth before connecting
-            checkAuth().then(authenticated => {
+            checkAuth().then(async authenticated => {
                 if (authenticated) {
-                    // Load all employees data on page load
-                    loadAllEmployees().then(() => {
-                        // Render table after loading employees
-                        renderEmployeesTable();
-                    });
+                    // Load today's events first to restore state
+                    await loadTodayEvents();
+
+                    // Load all employees data and merge
+                    await loadAllEmployees();
+
+                    // Connect for real-time updates
                     connect();
                 } else {
                     // Not authenticated, redirect to login

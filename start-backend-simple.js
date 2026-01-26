@@ -1177,6 +1177,65 @@ app.get('/api/events', requireAuth, async (req, res) => {
   // Return memory buffer events
   res.json(memoryEvents);
 });
+// Get today's access events endpoint (protected)
+app.get('/api/access-events/today', requireAuth, async (req, res) => {
+  try {
+    const { pool } = require('./database');
+    const today = new Date().toISOString().split('T')[0];
+
+    const dbResult = await pool.query(
+      `SELECT id, user_id as "employeeId", card_name as "fullName", 
+              received_at as timestamp, action as "eventType", 
+              event_data->>'TerminalIP' as "terminalIp",
+              event_data
+       FROM events 
+       WHERE received_at >= $1::date 
+       ORDER BY received_at DESC`,
+      [today]
+    );
+
+    res.json({
+      success: true,
+      events: dbResult.rows
+    });
+  } catch (err) {
+    console.error('[API] Error fetching today\'s events:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Manual event logging endpoint (protected)
+app.post('/api/access-events', requireAuth, async (req, res) => {
+  try {
+    const event = req.body;
+    if (!event.code || !event.data) {
+      return res.status(400).json({ success: false, message: 'Invalid event data' });
+    }
+    await addEvent(event);
+    res.json({ success: true, message: 'Event logged' });
+  } catch (err) {
+    console.error('[API] Error logging manual event:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Retention policy: Cleanup events older than 7 days
+setInterval(async () => {
+  try {
+    if (dbAvailable) {
+      const { pool } = require('./database');
+      const result = await pool.query(
+        "DELETE FROM events WHERE received_at < NOW() - INTERVAL '7 days'"
+      );
+      if (result.rowCount > 0) {
+        console.log(`[DB] Cleanup: Removed ${result.rowCount} old events.`);
+      }
+    }
+  } catch (err) {
+    console.error('[DB] Cleanup error:', err.message);
+  }
+}, 24 * 60 * 60 * 1000); // Once a day
+
 
 // SSE realtime endpoint (protected)
 app.get('/api/realtime', requireAuth, (req, res) => {
