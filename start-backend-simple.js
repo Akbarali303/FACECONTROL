@@ -1131,75 +1131,48 @@ app.delete('/api/employees/:userId', requireAuth, requireAdmin, async (req, res)
   }
 });
 
-// Get events endpoint (protected)
-app.get('/api/events', requireAuth, async (req, res) => {
-  const limit = parseInt(req.query.limit) || 100;
-
-  // Always get from memory buffer (works even without database)
-  const memoryEvents = eventBuffer
-    .filter(e => e !== null && e !== undefined)
-    .slice(-limit)
-    .reverse(); // Most recent first
-
-  // Try to get from database if available
+// Get events endpoint
+app.get('/api/public/events', async (req, res) => {
   try {
-    const { pool } = require('./database');
-    const dbResult = await pool.query(
-      'SELECT * FROM events ORDER BY received_at DESC LIMIT $1',
-      [limit]
-    );
+    const limit = Math.min(parseInt(req.query.limit || '500', 10), 2000);
 
-    if (dbResult.rows.length > 0) {
-      // Combine: database events + memory events (deduplicate by receivedAt)
-      const dbEvents = dbResult.rows.map(row => ({
-        code: row.code,
-        action: row.action,
-        index: row.index_value,
-        data: row.event_data,
-        receivedAt: row.received_at
-      }));
+    // Optional filters
+    const from = req.query.from; // YYYY-MM-DD
+    const to = req.query.to;     // YYYY-MM-DD
 
-      // Merge and deduplicate
-      const allEvents = [...dbEvents, ...memoryEvents];
-      const uniqueEvents = allEvents.filter((event, index, self) =>
-        index === self.findIndex(e => e.receivedAt === event.receivedAt)
-      );
+    let where = [];
+    let params = [];
+    let idx = 1;
 
-      // Sort by receivedAt descending
-      uniqueEvents.sort((a, b) => new Date(b.receivedAt) - new Date(a.receivedAt));
-
-      return res.json(uniqueEvents.slice(0, limit));
+    if (from) {
+      where.push(`received_at >= $${idx++}::date`);
+      params.push(from);
     }
-  } catch (err) {
-    // Database not available - use memory buffer only
-  }
+    if (to) {
+      // include whole day
+      where.push(`received_at < ($${idx++}::date + interval '1 day')`);
+      params.push(to);
+    }
 
-  // Return memory buffer events
-  res.json(memoryEvents);
-});
-// Get today's access events endpoint (protected)
-app.get('/api/access-events/today', requireAuth, async (req, res) => {
-  try {
-    const { pool } = require('./database');
-    const today = new Date().toISOString().split('T')[0];
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-    const dbResult = await pool.query(
-      `SELECT id, user_id as "employeeId", card_name as "fullName", 
-              received_at as timestamp, action as "eventType", 
-              event_data->>'TerminalIP' as "terminalIp",
-              event_data
-       FROM events 
-       WHERE received_at >= $1::date 
-       ORDER BY received_at DESC`,
-      [today]
-    );
+    const q = `
+      SELECT *
+      FROM events
+      ${whereSql}
+      ORDER BY received_at DESC
+      LIMIT ${limit}
+    `;
+
+    const result = await pool.query(q, params);
 
     res.json({
       success: true,
-      events: dbResult.rows
+      count: result.rows.length,
+      rows: result.rows
     });
   } catch (err) {
-    console.error('[API] Error fetching today\'s events:', err);
+    console.error('[Public Events] Error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
