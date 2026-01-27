@@ -746,6 +746,35 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+// Delete user endpoint
+app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const currentUserId = req.session.user.id;
+
+    if (!dbAvailable) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+
+    // Prevent deleting yourself
+    if (userId === currentUserId) {
+      return res.status(400).json({ success: false, message: 'O\'zingizni o\'chira olmaysiz' });
+    }
+
+    const { pool } = require('./database');
+    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING id', [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi' });
+    }
+
+    res.json({ success: true, message: 'Foydalanuvchi muvaffaqiyatli o\'chirildi' });
+  } catch (err) {
+    console.error('[API] Error deleting user:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Delete employee endpoint
 app.delete('/api/employees/:userId', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -1131,6 +1160,346 @@ app.delete('/api/employees/:userId', requireAuth, requireAdmin, async (req, res)
   }
 });
 
+// Time Settings API endpoints
+
+// Get time settings
+app.get('/api/time-settings', requireAuth, async (req, res) => {
+  try {
+    if (dbAvailable) {
+      try {
+        const { pool } = require('./database');
+        const result = await pool.query('SELECT * FROM time_settings ORDER BY id DESC LIMIT 1');
+        
+        if (result.rows.length > 0) {
+          const settings = result.rows[0];
+          return res.json({
+            success: true,
+            settings: {
+              onTimeThreshold: settings.on_time_threshold,
+              lateThreshold: settings.late_threshold,
+              absentThreshold: settings.absent_threshold,
+              departureStartTime: settings.departure_start_time
+            }
+          });
+        } else {
+          // Return default values if no settings exist
+          return res.json({
+            success: true,
+            settings: {
+              onTimeThreshold: '09:10:00',
+              lateThreshold: '12:00:00',
+              absentThreshold: '13:00:00',
+              departureStartTime: '18:00:00'
+            }
+          });
+        }
+      } catch (err) {
+        console.error('[API] Database error getting time settings:', err.message);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+    }
+
+    res.status(503).json({ success: false, message: 'Database not available' });
+  } catch (err) {
+    console.error('[API] Error getting time settings:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update time settings
+app.put('/api/time-settings', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { onTimeThreshold, lateThreshold, absentThreshold, departureStartTime } = req.body;
+
+    if (!onTimeThreshold || !lateThreshold || !absentThreshold || !departureStartTime) {
+      return res.status(400).json({ success: false, message: 'Barcha maydonlar to\'ldirilishi kerak' });
+    }
+
+    if (dbAvailable) {
+      try {
+        const { pool } = require('./database');
+        
+        // Check if settings exist
+        const existing = await pool.query('SELECT id FROM time_settings ORDER BY id DESC LIMIT 1');
+        
+        if (existing.rows.length > 0) {
+          // Update existing settings
+          await pool.query(`
+            UPDATE time_settings 
+            SET on_time_threshold = $1,
+                late_threshold = $2,
+                absent_threshold = $3,
+                departure_start_time = $4,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $5
+          `, [onTimeThreshold, lateThreshold, absentThreshold, departureStartTime, existing.rows[0].id]);
+        } else {
+          // Insert new settings
+          await pool.query(`
+            INSERT INTO time_settings (on_time_threshold, late_threshold, absent_threshold, departure_start_time)
+            VALUES ($1, $2, $3, $4)
+          `, [onTimeThreshold, lateThreshold, absentThreshold, departureStartTime]);
+        }
+
+        return res.json({ success: true, message: 'Vaqt sozlamalari muvaffaqiyatli yangilandi' });
+      } catch (err) {
+        console.error('[API] Database error updating time settings:', err.message);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+    }
+
+    res.status(503).json({ success: false, message: 'Database not available' });
+  } catch (err) {
+    console.error('[API] Error updating time settings:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Get attendance records endpoint
+app.get('/api/attendance', requireAuth, async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const limit = Math.min(parseInt(req.query.limit || '1000', 10), 5000);
+
+    if (dbAvailable) {
+      try {
+        const { pool } = require('./database');
+        const result = await pool.query(`
+          SELECT 
+            a.id,
+            a.user_id,
+            a.card_name,
+            a.arrival_time,
+            a.departure_time,
+            a.minutes_late,
+            a.status,
+            a.is_excused,
+            a.date,
+            e.full_name,
+            e.position,
+            e.organization,
+            e.photo_url,
+            e.photo_base64
+          FROM attendance a
+          LEFT JOIN employees e ON a.user_id = e.user_id
+          WHERE a.date = $1
+          ORDER BY 
+            CASE 
+              WHEN a.departure_time IS NOT NULL THEN a.departure_time
+              WHEN a.arrival_time IS NOT NULL THEN a.arrival_time
+              ELSE a.date
+            END DESC
+          LIMIT $2
+        `, [date, limit]);
+
+        return res.json({
+          success: true,
+          count: result.rows.length,
+          date: date,
+          records: result.rows
+        });
+      } catch (err) {
+        console.error('[API] Database error getting attendance:', err.message);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+    }
+
+    res.status(503).json({ success: false, message: 'Database not available' });
+  } catch (err) {
+    console.error('[API] Error getting attendance:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Get monthly average KPI for employees
+app.get('/api/employees/monthly-kpi', requireAuth, async (req, res) => {
+  try {
+    const month = req.query.month || new Date().getMonth() + 1; // 1-12
+    const year = req.query.year || new Date().getFullYear();
+
+    if (dbAvailable) {
+      try {
+        const { pool } = require('./database');
+        
+        // Get time settings
+        const timeSettingsResult = await pool.query('SELECT * FROM time_settings ORDER BY id DESC LIMIT 1');
+        let timeSettings = {
+          onTimeThreshold: '09:10:00',
+          lateThreshold: '12:00:00',
+          absentThreshold: '13:00:00',
+          departureStartTime: '18:00:00'
+        };
+        
+        if (timeSettingsResult.rows.length > 0) {
+          const settings = timeSettingsResult.rows[0];
+          timeSettings = {
+            onTimeThreshold: settings.on_time_threshold,
+            lateThreshold: settings.late_threshold,
+            absentThreshold: settings.absent_threshold,
+            departureStartTime: settings.departure_start_time
+          };
+        }
+
+        // Get all attendance records for the month
+        const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+        const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of month
+        
+        const result = await pool.query(`
+          SELECT 
+            a.user_id,
+            a.arrival_time,
+            a.departure_time,
+            a.minutes_late,
+            a.status,
+            a.is_excused,
+            a.date
+          FROM attendance a
+          WHERE a.date >= $1 AND a.date <= $2
+          ORDER BY a.user_id, a.date
+        `, [startDate, endDate]);
+
+        // Group by user_id and calculate monthly average KPI
+        const userKPIMap = new Map();
+        
+        result.rows.forEach(record => {
+          const userId = record.user_id;
+          if (!userKPIMap.has(userId)) {
+            userKPIMap.set(userId, {
+              userId: userId,
+              totalKPI: 0,
+              daysCount: 0
+            });
+          }
+          
+          const userData = userKPIMap.get(userId);
+          
+          // Calculate KPI for this day
+          let dayKPI = 0;
+          
+          // Check if excused
+          if (record.is_excused === true) {
+            dayKPI = 100; // Sababli = 100%
+          } else if (record.is_excused === false) {
+            dayKPI = 0; // Sababsiz = 0%
+          } else {
+            // Normal KPI calculation
+            let arrivalKPI = 0;
+            let departureKPI = 0;
+            
+            // Arrival KPI (9:00-18:00 = 100%)
+            if (record.arrival_time) {
+              const arrivalTime = new Date(record.arrival_time);
+              const today = new Date(arrivalTime);
+              today.setHours(0, 0, 0, 0);
+              
+              const [onHours, onMinutes] = timeSettings.onTimeThreshold.split(':').map(Number);
+              const [depHours, depMinutes] = timeSettings.departureStartTime.split(':').map(Number);
+              
+              const workStart = new Date(today);
+              workStart.setHours(9, 0, 0, 0);
+              const workEnd = new Date(today);
+              workEnd.setHours(18, 0, 0, 0);
+              
+              if (arrivalTime >= workStart && arrivalTime <= workEnd) {
+                arrivalKPI = 100;
+              } else if (arrivalTime < workStart) {
+                arrivalKPI = 100;
+              }
+            }
+            
+            // Departure KPI (18:00-23:59 = 30%)
+            if (record.departure_time) {
+              const departureTime = new Date(record.departure_time);
+              const today = new Date(departureTime);
+              today.setHours(0, 0, 0, 0);
+              
+              const departureStart = new Date(today);
+              departureStart.setHours(18, 0, 0, 0);
+              const departureEnd = new Date(today);
+              departureEnd.setHours(23, 59, 59, 999);
+              
+              if (departureTime >= departureStart && departureTime <= departureEnd) {
+                departureKPI = 30;
+              }
+            }
+            
+            dayKPI = arrivalKPI + departureKPI;
+            if (dayKPI > 130) dayKPI = 130;
+          }
+          
+          userData.totalKPI += dayKPI;
+          userData.daysCount += 1;
+        });
+        
+        // Calculate average KPI for each user
+        const monthlyKPIs = [];
+        userKPIMap.forEach((userData, userId) => {
+          const avgKPI = userData.daysCount > 0 ? Math.round(userData.totalKPI / userData.daysCount) : 0;
+          monthlyKPIs.push({
+            userId: userId,
+            averageKPI: avgKPI,
+            daysCount: userData.daysCount
+          });
+        });
+        
+        return res.json({
+          success: true,
+          month: month,
+          year: year,
+          kpis: monthlyKPIs
+        });
+      } catch (err) {
+        console.error('[API] Database error getting monthly KPI:', err.message);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+    }
+
+    res.status(503).json({ success: false, message: 'Database not available' });
+  } catch (err) {
+    console.error('[API] Error getting monthly KPI:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update attendance excuse status (sababli/sababsiz)
+app.put('/api/attendance/:id/excuse', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_excused } = req.body; // true = sababli, false = sababsiz, null = belgilanmagan
+
+    if (dbAvailable) {
+      try {
+        const { pool } = require('./database');
+        
+        // Check if attendance record exists
+        const existing = await pool.query('SELECT id FROM attendance WHERE id = $1', [id]);
+        if (existing.rows.length === 0) {
+          return res.status(404).json({ success: false, message: 'Attendance record not found' });
+        }
+
+        // Update is_excused status
+        await pool.query(
+          `UPDATE attendance 
+           SET is_excused = $1,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $2`,
+          [is_excused === null ? null : Boolean(is_excused), id]
+        );
+
+        return res.json({ success: true, message: 'Sababli/sababsiz holati yangilandi' });
+      } catch (err) {
+        console.error('[API] Database error updating attendance excuse:', err.message);
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+    }
+
+    res.status(503).json({ success: false, message: 'Database not available' });
+  } catch (err) {
+    console.error('[API] Error updating attendance excuse:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Get events endpoint
 app.get('/api/public/events', async (req, res) => {
   try {
@@ -1392,42 +1761,93 @@ async function addEvent(event) {
         }
 
         // Calculate lateness based on new rules:
-        // - 22:55 gacha = vaqtida kelganlar (minutesLate = 0)
-        // - 22:59 gacha = kech qolganlar (minutesLate > 0)
-        // - 23:00 dan keyin = kelmaganlar (isAbsent = true)
+        // Get time settings from database
+        let timeSettings = {
+          onTimeThreshold: '09:10:00',
+          lateThreshold: '12:00:00',
+          absentThreshold: '13:00:00',
+          departureStartTime: '18:00:00'
+        };
+
+        try {
+          const settingsResult = await pool.query('SELECT * FROM time_settings ORDER BY id DESC LIMIT 1');
+          if (settingsResult.rows.length > 0) {
+            const settings = settingsResult.rows[0];
+            timeSettings = {
+              onTimeThreshold: settings.on_time_threshold,
+              lateThreshold: settings.late_threshold,
+              absentThreshold: settings.absent_threshold,
+              departureStartTime: settings.departure_start_time
+            };
+          }
+        } catch (settingsErr) {
+          console.error('[DB] Error loading time settings, using defaults:', settingsErr.message);
+        }
+
+        // Parse time thresholds
+        const parseTime = (timeStr) => {
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          return { hours, minutes };
+        };
+
+        const onTimeThreshold = parseTime(timeSettings.onTimeThreshold);
+        const lateThreshold = parseTime(timeSettings.lateThreshold);
+        const absentThreshold = parseTime(timeSettings.absentThreshold);
+        const workStartTime = parseTime(timeSettings.onTimeThreshold); // Use onTimeThreshold as work start
+
         const arrivalTime = new Date(eventWithTimestamp.receivedAt);
-        const onTimeDeadline = new Date(arrivalTime);
-        onTimeDeadline.setHours(22, 55, 0, 0); // 22:55 - vaqtida kelganlar
+        const arrivalDate = new Date(arrivalTime);
+        arrivalDate.setHours(0, 0, 0, 0);
 
-        const lateDeadline = new Date(arrivalTime);
-        lateDeadline.setHours(22, 59, 59, 999); // 22:59 - kech qolganlar
+        // Create deadline dates
+        const onTimeDeadline = new Date(arrivalDate);
+        onTimeDeadline.setHours(onTimeThreshold.hours, onTimeThreshold.minutes, 0, 0);
 
-        const absentDeadline = new Date(arrivalTime);
-        absentDeadline.setHours(23, 0, 0, 0); // 23:00 - kelmaganlar
+        const lateDeadline = new Date(arrivalDate);
+        lateDeadline.setHours(lateThreshold.hours, lateThreshold.minutes, 59, 999);
 
-        const workStartTime = new Date(arrivalTime);
-        workStartTime.setHours(22, 0, 0, 0); // 22:00 for calculation
+        const absentDeadline = new Date(arrivalDate);
+        absentDeadline.setHours(absentThreshold.hours, absentThreshold.minutes, 0, 0);
+
+        const workStart = new Date(arrivalDate);
+        workStart.setHours(workStartTime.hours, workStartTime.minutes, 0, 0);
+
+        // Check if this is a departure (after 18:00) or arrival (before 18:00)
+        const departureTime = new Date(today);
+        departureTime.setHours(timeSettings.departureStartTime.hours, timeSettings.departureStartTime.minutes, 0, 0);
+        const isDeparture = arrivalTime >= departureTime;
 
         let minutesLate = 0;
         let isAbsent = false;
 
-        if (arrivalTime >= absentDeadline) {
-          // 23:00 dan keyin = kelmaganlar
-          isAbsent = true;
-          minutesLate = 0;
-        } else if (arrivalTime > onTimeDeadline) {
-          // 22:55 dan 22:59 gacha = kech qolganlar
-          minutesLate = Math.floor((arrivalTime - workStartTime) / (1000 * 60));
+        if (isDeparture) {
+          // 18:00 dan keyin kelgan = ketgan, faqat departure_time ni saqlash
+          try {
+            await saveAttendance(event.data, arrivalTime, 0, false, true);
+          } catch (attErr) {
+            console.error('[DB] Error saving departure:', attErr.message);
+          }
         } else {
-          // 22:55 gacha = vaqtida kelganlar
-          minutesLate = 0;
-        }
+          // 00:00 dan 18:00 gacha kelgan = kelgan, arrival_time va status ni saqlash
+          if (arrivalTime >= absentDeadline) {
+            // Absent threshold dan keyin = kelmaganlar
+            isAbsent = true;
+            minutesLate = 0;
+          } else if (arrivalTime > onTimeDeadline) {
+            // OnTime threshold dan keyin, late threshold gacha = kech qolganlar
+            minutesLate = Math.floor((arrivalTime - workStart) / (1000 * 60));
+            if (minutesLate < 0) minutesLate = 0;
+          } else {
+            // OnTime threshold gacha = vaqtida kelganlar
+            minutesLate = 0;
+          }
 
-        // Save attendance record
-        try {
-          await saveAttendance(event.data, arrivalTime, minutesLate, isAbsent);
-        } catch (attErr) {
-          console.error('[DB] Error saving attendance:', attErr.message);
+          // Save attendance record
+          try {
+            await saveAttendance(event.data, arrivalTime, minutesLate, isAbsent, false);
+          } catch (attErr) {
+            console.error('[DB] Error saving attendance:', attErr.message);
+          }
         }
       }
     } catch (err) {

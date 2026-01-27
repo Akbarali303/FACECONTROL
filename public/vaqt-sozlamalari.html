@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaqt sozlamalari - FOREST HR</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: #f3f4f6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        input, textarea, select, button, a, span, div, p, h1, h2, h3, h4, h5, h6, li, ul, ol, table, th, td, label {
+            font-family: inherit;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #1f2937;
+            border-right: 1px solid #374151;
+            min-height: 100vh;
+            padding: 0;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            scrollbar-width: thin;
+            scrollbar-color: #4b5563 #1f2937;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #374151;
+            background: #1f2937;
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            position: relative;
+        }
+
+        .sidebar-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #10b981;
+        }
+
+        .sidebar-logo {
+            width: 131px;
+            height: 131px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+        }
+
+        .sidebar-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.4rem;
+            font-weight: 400;
+            color: #ffffff;
+            margin: 0;
+            letter-spacing: 2px;
+            text-align: center;
+            text-transform: uppercase;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header .subtitle {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: #94a3b8;
+            margin: 0;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 8px 0;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu-item {
+            margin: 4px 12px;
+        }
+
+        .sidebar-menu-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-menu-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+        }
+
+        .sidebar-menu-link:hover:not(.active) {
+            background: #374151;
+            color: #ffffff;
+        }
+
+        .sidebar-menu-link.active {
+            background: #374151;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            text-align: center;
+            border-top: 1px solid #374151;
+            flex-shrink: 0;
+            background: #1f2937;
+        }
+
+        .sidebar-footer-text {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: visible;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            letter-spacing: -0.3px;
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .org-content-wrapper {
+            padding: 32px;
+            background: #ffffff;
+        }
+
+        .org-list-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .btn-create-org {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-create-org:hover {
+            background: #1d4ed8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .org-list-container {
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .org-list-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .org-list-container thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f9fafb;
+        }
+
+        .org-list-container th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            background: #f9fafb;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        .org-list-container td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #111827;
+            font-size: 0.875rem;
+        }
+
+        .org-list-container tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .org-loading-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .org-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .org-loading-text {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 8px;
+            padding: 8px 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 40px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .language-selector:hover {
+            border-color: #10b981;
+            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .language-dropdown {
+            display: none;
+            position: absolute;
+            top: 48px;
+            left: 0;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 120px;
+            padding: 8px 0;
+        }
+
+        .language-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .language-option:hover {
+            background: #f9fafb;
+        }
+
+        .sidebar-user-profile {
+            margin: 0;
+            padding: 8px 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            height: 40px;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sidebar-user-profile:hover {
+            border-color: #10b981;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+        }
+
+        .sidebar-user-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: transparent;
+        }
+
+        .sidebar-user-icon img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            background: transparent;
+            filter: brightness(1.2) contrast(1.1);
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar-user-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #ef4444;
+            color: #ffffff;
+            border-radius: 10px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0 5px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .email-icon-container {
+            position: relative;
+        }
+
+        .time-settings-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .time-settings-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-settings-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group-time {
+            margin-bottom: 20px;
+        }
+
+        .form-group-time label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group-time input[type="time"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #111827;
+            background: #ffffff;
+            transition: all 0.2s;
+        }
+
+        .form-group-time input[type="time"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group-time .description {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .btn-save-time {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-top: 24px;
+        }
+
+        .btn-save-time:hover {
+            background: #1d4ed8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-save-time:active {
+            background: #1e40af;
+        }
+
+        .btn-save-time:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.875rem;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <img src="/22.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <h2>FOREST HR</h2>
+                <p class="subtitle">Xo'jaliklar aro nazorat tizimi</p>
+            </div>
+        </div>
+        <div class="sidebar-menu-label" style="padding: 12px 20px 4px 20px; color: #94a3b8; font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
+            ASOSIY MENYU
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-menu-item">
+                <a href="/" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                        </svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/tashkilotlar.html" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+                        </svg>
+                    </span>
+                    <span>Tashkilotlar</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/bolimlar.html" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                        </svg>
+                    </span>
+                    <span>Bo'limlar</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/lavozimlar.html" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                    </span>
+                    <span>Lavozimlar</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/xodimlar.html" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        </svg>
+                    </span>
+                    <span>Xodimlar</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/vaqt-sozlamalari.html" class="sidebar-menu-link active">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                        </svg>
+                    </span>
+                    <span>Vaqt sozlamalari</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/sozlamalar.html" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                        </svg>
+                    </span>
+                    <span>Sozlamalar</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/admin-qoshish.html" class="sidebar-menu-link">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                        </svg>
+                    </span>
+                    <span>Admin qo'shish</span>
+                </a>
+            </li>
+            <li class="sidebar-menu-item">
+                <a href="/login.html" class="sidebar-menu-link" style="color: #ef4444;">
+                    <span class="sidebar-menu-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.59-5.41L6.17 4.17C4.23 5.82 3 8.78 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-3.22-1.23-6.18-3.17-8.83z" />
+                        </svg>
+                    </span>
+                    <span>Chiqish</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <p class="sidebar-footer-text" style="margin: 0; line-height: 1.5;">FORESTDIGITAL © 2026.<br>Designed & Developed By Akbarali</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="header" id="globalHeader">
+                <div class="header-left">
+                    <h1 id="pageTitle">Vaqt sozlamalari</h1>
+                    <p id="pageBreadcrumb">Admin / Vaqt sozlamalari</p>
+                </div>
+                <div class="header-right">
+                    <div class="email-icon-container" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                            style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                        <span class="notification-badge" id="emailBadge" style="display: none;">0</span>
+                    </div>
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                            style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <div style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #ffffff;"></div>
+                    </div>
+                    <div class="language-selector" id="languageSelector" style="display: flex; align-items: center; gap: 8px; margin-right: 8px; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; height: 40px; box-sizing: border-box; position: relative;"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; fill: #6b7280;">
+                            <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+                        </svg>
+                        <span id="currentLanguage" style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">O'z</span>
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px; fill: #6b7280; margin-left: 4px;">
+                            <path d="M7 10l5 5 5-5z" />
+                        </svg>
+                        <div class="language-dropdown" id="languageDropdown" style="display: none; position: absolute; top: 48px; left: 0; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1000; min-width: 120px; padding: 8px 0;">
+                            <div class="language-option" onclick="changeLanguage('uz')" style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">O'z</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('ru')" style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Ru</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en')" style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Eng</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-user-profile" id="userProfileBtn" onclick="openSuperAdminInfoModal()"
+                        style="margin: 0; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px; box-sizing: border-box; cursor: pointer; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';">
+                        <div class="sidebar-user-icon"
+                            style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent; border-radius: 50%;">
+                            <img src="/user-icon.png" alt="User Icon"
+                                style="width: 24px; height: 24px; object-fit: contain;">
+                        </div>
+                        <div class="sidebar-user-info" style="flex: 1; min-width: 0;">
+                            <div class="sidebar-user-name" id="dashboardUserName"
+                                style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 2px;">
+                                A.Turdiyev</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="org-content-wrapper">
+                <div class="time-settings-form">
+                    <div class="success-message" id="successMessage">
+                        ✅ Vaqt sozlamalari muvaffaqiyatli saqlandi!
+                    </div>
+                    <div class="error-message" id="errorMessage">
+                        ❌ Xatolik yuz berdi. Qayta urinib ko'ring.
+                    </div>
+
+                    <div class="time-settings-card">
+                        <h3>⏰ Vaqt hisoblash qoidalari</h3>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 24px;">
+                            Xodimlarning kelish va ketish vaqtlarini hisoblash uchun chegaralarni sozlang.
+                        </p>
+
+                        <form id="timeSettingsForm">
+                            <div class="form-group-time">
+                                <label for="onTimeThreshold">Vaqtida kelganlar (gacha)</label>
+                                <input type="time" id="onTimeThreshold" name="onTimeThreshold" value="09:10" required>
+                                <div class="description">Bu vaqtgacha kelganlar "vaqtida kelganlar" deb hisoblanadi</div>
+                            </div>
+
+                            <div class="form-group-time">
+                                <label for="lateThreshold">Kech qolganlar (gacha)</label>
+                                <input type="time" id="lateThreshold" name="lateThreshold" value="12:00" required>
+                                <div class="description">Bu vaqtgacha kelganlar "kech qolganlar" deb hisoblanadi</div>
+                            </div>
+
+                            <div class="form-group-time">
+                                <label for="absentThreshold">Kelmaganlar (dan keyin)</label>
+                                <input type="time" id="absentThreshold" name="absentThreshold" value="13:00" required>
+                                <div class="description">Bu vaqtdan keyin kelganlar "kelmaganlar" deb hisoblanadi</div>
+                            </div>
+
+                            <div class="form-group-time">
+                                <label for="departureStartTime">Ketganlar (dan keyin)</label>
+                                <input type="time" id="departureStartTime" name="departureStartTime" value="18:00" required>
+                                <div class="description">Bu vaqtdan keyin ketganlar "ketganlar" deb hisoblanadi</div>
+                            </div>
+
+                            <button type="submit" class="btn-save-time" id="saveTimeBtn">
+                                <span>💾</span>
+                                <span>Saqlash</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language selector
+        const languageSelector = document.getElementById('languageSelector');
+        const languageDropdown = document.getElementById('languageDropdown');
+        const currentLanguageSpan = document.getElementById('currentLanguage');
+
+        if (languageSelector) {
+            languageSelector.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (languageDropdown) {
+                    languageDropdown.style.display = languageDropdown.style.display === 'none' ? 'block' : 'none';
+                }
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (languageDropdown && languageSelector && !languageSelector.contains(e.target) && !languageDropdown.contains(e.target)) {
+                languageDropdown.style.display = 'none';
+            }
+        });
+
+        function changeLanguage(lang) {
+            const langMap = {
+                'uz': 'O\'z',
+                'ru': 'Ru',
+                'en': 'Eng'
+            };
+            if (currentLanguageSpan) {
+                currentLanguageSpan.textContent = langMap[lang] || 'O\'z';
+            }
+            if (languageDropdown) {
+                languageDropdown.style.display = 'none';
+            }
+        }
+
+        // Update sidebar menu based on user role
+        async function updateSidebarMenuByRole() {
+            try {
+                const response = await fetch('/api/users/me');
+                const data = await response.json();
+                const userRole = data.success && data.user ? (data.user.role || 'admin') : 'admin';
+                
+                const menuItems = document.querySelectorAll('.sidebar-menu-item');
+                menuItems.forEach(item => {
+                    const link = item.querySelector('.sidebar-menu-link');
+                    if (!link) return;
+                    
+                    const linkText = link.textContent.trim();
+                    const isLogout = linkText === 'Chiqish' || (link.href && link.href.includes('login.html'));
+                    
+                    if (userRole === 'superadmin' || userRole === 'admin') {
+                        item.style.display = '';
+                    } else if (userRole === 'kadr') {
+                        if (linkText === 'Dashboard' || linkText === 'Tashkilotlar' || linkText === 'Bo\'limlar' || 
+                            linkText === 'Xodimlar' || linkText === 'Sozlamalar' || isLogout) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    } else if (userRole === 'foydalanuvchi') {
+                        if (linkText === 'Dashboard' || linkText === 'Sozlamalar' || isLogout) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating sidebar menu:', error);
+            }
+        }
+
+        // Load sidebar menu on page load
+        window.addEventListener('DOMContentLoaded', updateSidebarMenuByRole);
+
+        // Time settings page functionality
+
+        // Load time settings
+        async function loadTimeSettings() {
+            try {
+                const response = await fetch('/api/time-settings');
+                const data = await response.json();
+                
+                if (data.success && data.settings) {
+                    const settings = data.settings;
+                    
+                    // Convert TIME format (HH:MM:SS) to time input format (HH:MM)
+                    document.getElementById('onTimeThreshold').value = settings.onTimeThreshold.substring(0, 5);
+                    document.getElementById('lateThreshold').value = settings.lateThreshold.substring(0, 5);
+                    document.getElementById('absentThreshold').value = settings.absentThreshold.substring(0, 5);
+                    document.getElementById('departureStartTime').value = settings.departureStartTime.substring(0, 5);
+                }
+            } catch (error) {
+                console.error('Error loading time settings:', error);
+                showError('Vaqt sozlamalarini yuklashda xatolik yuz berdi');
+            }
+        }
+
+        // Save time settings
+        const timeSettingsForm = document.getElementById('timeSettingsForm');
+        const saveTimeBtn = document.getElementById('saveTimeBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function showSuccess(message) {
+            successMessage.textContent = '✅ ' + message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        if (timeSettingsForm) {
+            timeSettingsForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    onTimeThreshold: document.getElementById('onTimeThreshold').value + ':00',
+                    lateThreshold: document.getElementById('lateThreshold').value + ':00',
+                    absentThreshold: document.getElementById('absentThreshold').value + ':00',
+                    departureStartTime: document.getElementById('departureStartTime').value + ':00'
+                };
+
+                saveTimeBtn.disabled = true;
+                saveTimeBtn.innerHTML = '<span>⏳</span><span>Saqlanmoqda...</span>';
+
+                try {
+                    const response = await fetch('/api/time-settings', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showSuccess('Vaqt sozlamalari muvaffaqiyatli saqlandi!');
+                    } else {
+                        showError(data.message || 'Vaqt sozlamalarini saqlashda xatolik yuz berdi');
+                    }
+                } catch (error) {
+                    console.error('Error saving time settings:', error);
+                    showError('Server bilan aloqa qilishda xatolik yuz berdi');
+                } finally {
+                    saveTimeBtn.disabled = false;
+                    saveTimeBtn.innerHTML = '<span>💾</span><span>Saqlash</span>';
+                }
+            });
+        }
+
+        // Load time settings on page load
+        window.addEventListener('DOMContentLoaded', loadTimeSettings);
+
+        // Load notification count
+        async function loadNotificationCount() {
+            try {
+                const response = await fetch('/api/notifications/count');
+                const data = await response.json();
+                const badge = document.getElementById('emailBadge');
+                if (badge && data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = 'flex';
+                } else if (badge) {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading notification count:', error);
+            }
+        }
+
+        // Load notification count on page load
+        window.addEventListener('DOMContentLoaded', loadNotificationCount);
+        
+        // Update notification count every 30 seconds
+        setInterval(loadNotificationCount, 30000);
+    </script>
+</body>
+</html>

@@ -130,7 +130,7 @@ async function updateEmployee(userId, data) {
 }
 
 // Save attendance record
-async function saveAttendance(eventData, arrivalTime, minutesLate, isAbsent = false) {
+async function saveAttendance(eventData, arrivalTime, minutesLate, isAbsent = false, isDeparture = false) {
   try {
     const userId = eventData.UserID;
     const cardName = eventData.CardName || eventData.cardName || null;
@@ -145,31 +145,55 @@ async function saveAttendance(eventData, arrivalTime, minutesLate, isAbsent = fa
 
     // Check if attendance record exists for today
     const existing = await pool.query(
-      'SELECT id FROM attendance WHERE user_id = $1 AND date = $2',
+      'SELECT id, arrival_time, departure_time FROM attendance WHERE user_id = $1 AND date = $2',
       [userId, dateOnly]
     );
 
     if (existing.rows.length > 0) {
       // Update existing record
-      await pool.query(
-        `UPDATE attendance 
-         SET arrival_time = $1,
-             minutes_late = $2,
-             status = $3,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE user_id = $4 AND date = $5`,
-        [arrivalTime, minutesLate, status, userId, dateOnly]
-      );
+      if (isDeparture) {
+        // 18:00 dan keyin kelgan = ketgan, faqat departure_time ni yangilash
+        await pool.query(
+          `UPDATE attendance 
+           SET departure_time = $1,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = $2 AND date = $3`,
+          [arrivalTime, userId, dateOnly]
+        );
+      } else {
+        // 00:00 dan 18:00 gacha kelgan = kelgan, arrival_time va status ni yangilash
+        await pool.query(
+          `UPDATE attendance 
+           SET arrival_time = $1,
+               minutes_late = $2,
+               status = $3,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = $4 AND date = $5`,
+          [arrivalTime, minutesLate, status, userId, dateOnly]
+        );
+      }
       return existing.rows[0].id;
     } else {
       // Create new attendance record
-      const result = await pool.query(
-        `INSERT INTO attendance (user_id, card_name, arrival_time, minutes_late, status, date)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id`,
-        [userId, cardName, arrivalTime, minutesLate, status, dateOnly]
-      );
-      return result.rows[0].id;
+      if (isDeparture) {
+        // 18:00 dan keyin kelgan = ketgan, faqat departure_time ni saqlash
+        const result = await pool.query(
+          `INSERT INTO attendance (user_id, card_name, departure_time, date)
+           VALUES ($1, $2, $3, $4)
+           RETURNING id`,
+          [userId, cardName, arrivalTime, dateOnly]
+        );
+        return result.rows[0].id;
+      } else {
+        // 00:00 dan 18:00 gacha kelgan = kelgan, arrival_time va status ni saqlash
+        const result = await pool.query(
+          `INSERT INTO attendance (user_id, card_name, arrival_time, minutes_late, status, date)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING id`,
+          [userId, cardName, arrivalTime, minutesLate, status, dateOnly]
+        );
+        return result.rows[0].id;
+      }
     }
   } catch (err) {
     console.error('[Attendance] Error saving attendance:', err.message);

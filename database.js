@@ -141,15 +141,25 @@ async function initDatabase() {
         id SERIAL PRIMARY KEY,
         user_id VARCHAR(50) NOT NULL,
         card_name VARCHAR(100),
-        arrival_time TIMESTAMP NOT NULL,
+        arrival_time TIMESTAMP,
         departure_time TIMESTAMP,
         minutes_late INTEGER DEFAULT 0,
         status VARCHAR(20) DEFAULT 'ontime',
+        is_excused BOOLEAN DEFAULT NULL,
         date DATE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, date)
       )
     `);
+
+    // Add is_excused column if it doesn't exist (for existing databases)
+    try {
+      await pool.query('ALTER TABLE attendance ADD COLUMN IF NOT EXISTS is_excused BOOLEAN DEFAULT NULL');
+      await pool.query('ALTER TABLE attendance ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+    } catch (err) {
+      // Columns might already exist, ignore error
+    }
 
     // Create organizations table
     await pool.query(`
@@ -169,7 +179,7 @@ async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS time_settings (
         id SERIAL PRIMARY KEY,
-        on_time_threshold TIME DEFAULT '09:05:00',
+        on_time_threshold TIME DEFAULT '09:10:00',
         late_threshold TIME DEFAULT '12:00:00',
         absent_threshold TIME DEFAULT '13:00:00',
         departure_start_time TIME DEFAULT '18:00:00',
@@ -184,8 +194,22 @@ async function initDatabase() {
     if (existingSettings.rows.length === 0) {
       await pool.query(`
         INSERT INTO time_settings (on_time_threshold, late_threshold, absent_threshold, departure_start_time, departure_end_time)
-        VALUES ('09:05:00', '12:00:00', '13:00:00', '18:00:00', '23:59:59')
+        VALUES ('09:10:00', '12:00:00', '13:00:00', '18:00:00', '23:59:59')
       `);
+    } else {
+      // Update existing settings to new defaults if they are old values
+      const currentSettings = await pool.query('SELECT on_time_threshold FROM time_settings ORDER BY id DESC LIMIT 1');
+      if (currentSettings.rows.length > 0 && currentSettings.rows[0].on_time_threshold === '09:05:00') {
+        await pool.query(`
+          UPDATE time_settings 
+          SET on_time_threshold = '09:10:00',
+              late_threshold = '12:00:00',
+              absent_threshold = '13:00:00',
+              departure_start_time = '18:00:00',
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = (SELECT id FROM time_settings ORDER BY id DESC LIMIT 1)
+        `);
+      }
     }
 
     // Add phone, email, and employee_count columns if they don't exist (for existing databases)

@@ -21,7 +21,7 @@
         }
 
         body {
-            background: #f5f7fb;
+            background: #f3f4f6;
             min-height: 100vh;
             padding: 0;
             margin: 0;
@@ -55,18 +55,18 @@
 
         .sidebar {
             width: 280px;
-            background: #0f172a;
-            border-right: 1px solid #1e293b;
+            background: #1f2937;
+            border-right: 1px solid #374151;
             min-height: 100vh;
             padding: 0;
-            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
             position: fixed;
             left: 0;
             top: 0;
             overflow-y: auto;
             z-index: 1000;
             scrollbar-width: thin;
-            scrollbar-color: #334155 #0f172a;
+            scrollbar-color: #4b5563 #1f2937;
             display: flex;
             flex-direction: column;
         }
@@ -76,30 +76,29 @@
         }
 
         .sidebar::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #1f2937;
             border-radius: 3px;
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: #334155;
+            background: #4b5563;
             border-radius: 3px;
         }
 
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: #6b7280;
         }
 
         .sidebar-header {
             padding: 16px 20px;
-            border-bottom: 1px solid #1e293b;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid #374151;
+            background: #1f2937;
             margin-bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 2px;
             position: relative;
-            overflow: hidden;
         }
 
         .sidebar-header::before {
@@ -154,10 +153,10 @@
 
 
         .sidebar-user-profile {
-            padding: 20px;
+            padding: 16px;
             margin: 16px 12px;
-            background: #1e293b;
-            border-radius: 12px;
+            background: #374151;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -240,17 +239,17 @@
         }
 
         .sidebar-menu-link:hover:not(.active) {
-            background: #1e293b;
+            background: #374151;
             color: #ffffff;
         }
 
         .sidebar-menu-link[style*="color: #ef4444"]:hover {
-            background: #1e293b;
+            background: #374151;
             color: #ef4444;
         }
 
         .sidebar-menu-link.active {
-            background: #1e293b;
+            background: #374151;
             color: #ffffff;
             font-weight: 600;
         }
@@ -258,9 +257,9 @@
         .sidebar-logout {
             margin-top: auto;
             padding: 16px 12px;
-            border-top: 1px solid #1e293b;
+            border-top: 1px solid #374151;
             flex-shrink: 0;
-            background: #0f172a;
+            background: #1f2937;
         }
 
         .sidebar-logout-link {
@@ -276,7 +275,7 @@
         }
 
         .sidebar-logout-link:hover {
-            background: #1e293b;
+            background: #374151;
             color: #ef4444;
         }
 
@@ -296,9 +295,9 @@
         .sidebar-footer {
             padding: 16px 20px;
             text-align: center;
-            border-top: 1px solid #1e293b;
+            border-top: 1px solid #374151;
             flex-shrink: 0;
-            background: #0f172a;
+            background: #1f2937;
         }
 
         .sidebar-footer-text {
@@ -351,10 +350,10 @@
             max-width: 100%;
             margin: 0;
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             overflow: visible;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e5e7eb;
             display: flex;
             flex-direction: column;
             flex: 1;
@@ -375,27 +374,35 @@
         .header {
             background: #ffffff;
             border-bottom: 1px solid #e2e8f0;
-            padding: 12px 24px;
+            padding: 20px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .header-left {
             display: flex;
             flex-direction: column;
+            gap: 4px;
         }
 
         .header h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
+            font-size: 1.25rem;
+            font-weight: 700;
             color: #111827;
+            margin: 0;
+            letter-spacing: -0.3px;
         }
 
         .header p {
-            margin: 2px 0 0 0;
-            font-size: 0.85rem;
+            margin: 0;
+            font-size: 0.875rem;
             color: #6b7280;
+            font-weight: 400;
         }
 
         .header-right {
@@ -657,6 +664,19 @@
             color: #6b7280;
         }
 
+        .excuse-badge {
+            transition: all 0.2s ease;
+        }
+
+        .excuse-badge:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .excuse-option:hover {
+            background: #f9fafb !important;
+        }
+
         .badge {
             display: inline-block;
             padding: 3px 8px;
@@ -819,10 +839,10 @@
 
         .active-employee-card {
             background: #ffffff;
-            border-radius: 12px;
+            border-radius: 6px;
             padding: 20px;
             border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .active-employee-card-header {
@@ -1071,7 +1091,7 @@
 
         .status-card {
             background: #ffffff;
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 20px;
             border: 1px solid #e5e7eb;
             display: flex;
@@ -1082,7 +1102,7 @@
             width: 100%;
             max-width: 100%;
             min-width: 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -1249,8 +1269,11 @@
         }
 
         .org-content-wrapper {
-            padding: 24px;
+            padding: 32px;
             background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
         }
 
         .org-list-header {
@@ -1277,35 +1300,37 @@
         }
 
         .btn-create-org {
-            background: #ffffff;
-            color: #111827;
-            border: 1px solid #d1d5db;
-            padding: 10px 20px;
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
             border-radius: 6px;
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .btn-create-org:hover {
-            background: #f9fafb;
-            border-color: #9ca3af;
+            background: #1d4ed8;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         .btn-create-org:active {
-            background: #f3f4f6;
+            background: #1e40af;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .org-list-container {
             background: #ffffff;
-            border-radius: 0;
+            border-radius: 6px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            box-shadow: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         /* Scrollbar for employees table */
@@ -1438,12 +1463,15 @@
             text-align: center;
             padding: 80px 40px;
             color: #94a3b8;
+            background: #ffffff;
+            border-radius: 6px;
+            margin: 20px;
         }
 
         .org-empty-state-icon {
             font-size: 4rem;
             margin-bottom: 16px;
-            opacity: 0.5;
+            opacity: 0.4;
         }
 
         .org-empty-state-text {
@@ -2216,78 +2244,65 @@
 
     <div class="main-content">
         <div class="container" id="dashboardSection">
-            <div class="header">
+            <div class="header" id="globalHeader">
                 <div class="header-left">
-                    <h1 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #111827;">Asosiy Dashboard</h1>
-                    <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #6b7280; font-weight: 400;">Admin / Asosiy
-                        Dashboard</p>
+                    <h1 id="pageTitle">Asosiy Dashboard</h1>
+                    <p id="pageBreadcrumb">Admin / Asosiy Dashboard</p>
                 </div>
                 <div class="header-right">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-right: 8px;">
-                        <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
-                            onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
-                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                <polyline points="22,6 12,13 2,6" />
-                            </svg>
-                        </div>
-                        <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
-                            onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
-                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
-                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                            </svg>
-                            <div
-                                style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #ffffff;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="language-selector"
-                        style="display: flex; align-items: center; gap: 8px; margin-right: 8px; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; height: 40px; box-sizing: border-box;"
+                    <div class="email-icon-container" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
                         onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
                         onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                            style="width: 18px; height: 18px; fill: #6b7280;">
-                            <path
-                                d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+                            style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
                         </svg>
-                        <span id="currentLanguage"
-                            style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">O'z</span>
+                        <span class="notification-badge" id="emailBadge" style="display: none;">0</span>
+                    </div>
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                            style="width: 16px; height: 16px; fill: #6b7280; margin-left: 4px;">
+                            style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <div style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #ffffff;"></div>
+                    </div>
+                    <div class="language-selector" id="languageSelector" style="display: flex; align-items: center; gap: 8px; margin-right: 8px; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; height: 40px; box-sizing: border-box; position: relative;"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; fill: #6b7280;">
+                            <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+                        </svg>
+                        <span id="currentLanguage" style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">O'z</span>
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px; fill: #6b7280; margin-left: 4px;">
                             <path d="M7 10l5 5 5-5z" />
                         </svg>
-                    </div>
-                    <div class="language-dropdown" id="languageDropdown"
-                        style="display: none; position: absolute; top: 60px; right: 24px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1000; min-width: 120px; padding: 8px 0;">
-                        <div class="language-option" onclick="changeLanguage('uz')"
-                            style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s;"
-                            onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
-                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">O'z</span>
-                        </div>
-                        <div class="language-option" onclick="changeLanguage('ru')"
-                            style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
-                            onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
-                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Ru</span>
-                        </div>
-                        <div class="language-option" onclick="changeLanguage('en')"
-                            style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
-                            onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
-                            <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Eng</span>
+                        <div class="language-dropdown" id="languageDropdown" style="display: none; position: absolute; top: 48px; left: 0; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1000; min-width: 120px; padding: 8px 0;">
+                            <div class="language-option" onclick="changeLanguage('uz')" style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">O'z</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('ru')" style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Ru</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en')" style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Eng</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="sidebar-user-profile" onclick="openSuperAdminInfoModal()"
+                    <div class="sidebar-user-profile" id="userProfileBtn" onclick="openSuperAdminInfoModal()"
                         style="margin: 0; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px; box-sizing: border-box; cursor: pointer; transition: all 0.2s;"
-                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 2px 6px rgba(16, 185, 129, 0.15)';"
+                        onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
                         onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';">
                         <div class="sidebar-user-icon"
-                            style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent;">
-                            <img src="/chekmark.webp" alt="Checkmark"
-                                style="width: 22px; height: 22px; object-fit: contain; background: transparent; filter: brightness(1.2) contrast(1.1);">
+                            style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent; border-radius: 50%;">
+                            <img src="/user-icon.png" alt="User Icon"
+                                style="width: 24px; height: 24px; object-fit: contain;">
                         </div>
                         <div class="sidebar-user-info" style="flex: 1; min-width: 0;">
                             <div class="sidebar-user-name" id="dashboardUserName"
@@ -2385,7 +2400,7 @@
                                 Markaziy bo'linmalar</div>
                         </div>
                         <div class="bar-chart-container" id="departmentChartContainer"
-                            style="margin-top: 0; width: 100%; flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; display: flex; align-items: center; justify-content: center;">
+                            style="margin-top: 0; width: 100%; flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;">
                             <div style="text-align: center; color: #6b7280;">Ma'lumotlar yig'ilmoqda...</div>
                         </div>
                     </div>
@@ -2450,8 +2465,10 @@
                             <th style="width: 150px;">TELEFON</th>
                             <th style="width: 180px;">EMAIL</th>
                             <th style="width: 100px;">Sana</th>
-                            <th style="width: 120px;">Vaqt</th>
+                            <th style="width: 120px;">Kelish vaqti</th>
+                            <th style="width: 120px;">Ketish vaqti</th>
                             <th style="width: 130px;">Kechikish</th>
+                            <th style="width: 150px;">STATUS</th>
                             <th style="width: 80px;">KPI %</th>
                         </tr>
                     </thead>
@@ -2467,11 +2484,16 @@
         <!-- Organizations Section -->
         <div id="organizationsSection" class="content-section" style="display: none;">
             <div class="container">
-                <div class="header">
+                <div class="header" style="background: #ffffff; padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
                     <div class="header-left">
-                        <h1 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #111827;">Tashkilotlar</h1>
-                        <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #6b7280; font-weight: 400;">Admin /
-                            Tashkilotlar</p>
+                        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #111827; letter-spacing: -0.3px;">
+                            Tashkilotlar
+                        </h1>
+                        <p style="margin: 4px 0 0 0; font-size: 1rem; color: #6b7280; font-weight: 400;">
+
+
+                            Admin / Tashkilotlar
+                        </p>
                     </div>
                     <div class="header-right">
                         <div style="display: flex; align-items: center; gap: 8px; margin-right: 8px;">
@@ -2555,7 +2577,6 @@
 
                 <div class="org-content-wrapper">
                     <div class="org-list-header">
-                        <h2>Tashkilotlar ro'yxati</h2>
                         <button id="createOrgBtn" class="btn-create-org">
                             <span>➕</span>
                             <span>Tashkilot qo'shish</span>
@@ -2567,22 +2588,22 @@
                             <thead style="position: sticky; top: 0; z-index: 10; background: #f9fafb;">
                                 <tr>
                                     <th
-                                        style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap;">
+                                        style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap; font-size: 0.875rem;">
                                         №</th>
                                     <th
-                                        style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap;">
+                                        style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap; font-size: 0.875rem;">
                                         Tashkilot nomi</th>
                                     <th
-                                        style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap;">
+                                        style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap; font-size: 0.875rem;">
                                         Xodimlari soni</th>
                                     <th
-                                        style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap;">
+                                        style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap; font-size: 0.875rem;">
                                         Telefon raqami</th>
                                     <th
-                                        style="padding: 12px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap;">
+                                        style="padding: 14px 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap; font-size: 0.875rem;">
                                         Email</th>
                                     <th
-                                        style="padding: 12px 16px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap;">
+                                        style="padding: 14px 16px; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; background: #f9fafb; white-space: nowrap; font-size: 0.875rem;">
                                         Amallar</th>
                                 </tr>
                             </thead>
@@ -2693,7 +2714,6 @@
 
                 <div class="org-content-wrapper">
                     <div class="org-list-header">
-                        <h2>Bo'limlar ro'yxati</h2>
                         <button id="createDeptBtn" class="btn-create-org">
                             <span>➕</span>
                             <span>Yangi bo'lim</span>
@@ -2931,7 +2951,6 @@
 
                 <div class="org-content-wrapper">
                     <div class="org-list-header">
-                        <h2>Xodimlar ro'yxati</h2>
                         <button id="createEmployeeBtn" class="btn-create-org">
                             <span>➕</span>
                             <span>Yangi xodim</span>
@@ -2990,13 +3009,72 @@
             <div class="container">
                 <div class="header">
                     <div class="header-left">
-                        <h1 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #111827;">Lavozimlar</h1>
-                        <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #6b7280; font-weight: 400;">Admin /
+                        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #111827;">Lavozimlar</h1>
+                        <p style="margin: 2px 0 0 0; font-size: 1rem; color: #6b7280; font-weight: 400;">Admin /
                             Lavozimlar</p>
                     </div>
                     <div class="header-right">
-                        <div class="sidebar-user-profile"
-                            style="margin: 0; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px; box-sizing: border-box;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-right: 8px;">
+                            <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                                onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                                onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                    style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
+                                </svg>
+                            </div>
+                            <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                                onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                                onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                    style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                                <div
+                                    style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #ffffff;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="language-selector"
+                            style="display: flex; align-items: center; gap: 8px; margin-right: 8px; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; height: 40px; box-sizing: border-box;"
+                            onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
+                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                style="width: 18px; height: 18px; fill: #6b7280;">
+                                <path
+                                    d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+                            </svg>
+                            <span id="currentLanguagePos"
+                                style="font-size: 0.875rem; font-weight: 500; color: #6b7280;">O'z</span>
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                style="width: 16px; height: 16px; fill: #6b7280; margin-left: 4px;">
+                                <path d="M7 10l5 5 5-5z" />
+                            </svg>
+                        </div>
+                        <div class="language-dropdown" id="languageDropdownPos"
+                            style="display: none; position: absolute; top: 60px; right: 24px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1000; min-width: 120px; padding: 8px 0;">
+                            <div class="language-option" onclick="changeLanguage('uz', 'currentLanguagePos', 'languageDropdownPos')"
+                                style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">O'z</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('ru', 'currentLanguagePos', 'languageDropdownPos')"
+                                style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Ru</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en', 'currentLanguagePos', 'languageDropdownPos')"
+                                style="padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; border-top: 1px solid #e5e7eb;"
+                                onmouseover="this.style.background='#f9fafb';" onmouseout="this.style.background='';">
+                                <span style="font-size: 0.875rem; font-weight: 500; color: #111827;">Eng</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-user-profile" onclick="openSuperAdminInfoModal()"
+                            style="margin: 0; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px; box-sizing: border-box; cursor: pointer; transition: all 0.2s;"
+                            onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 2px 6px rgba(16, 185, 129, 0.15)';"
+                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';">
                             <div class="sidebar-user-icon"
                                 style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent;">
                                 <img src="/chekmark.webp" alt="Checkmark"
@@ -3013,7 +3091,6 @@
 
                 <div class="org-content-wrapper">
                     <div class="org-list-header">
-                        <h2>Lavozimlar ro'yxati</h2>
                         <button id="createPositionBtn" class="btn-create-org">
                             <span>➕</span>
                             <span>Yangi lavozim</span>
@@ -3125,10 +3202,6 @@
                 </div>
 
                 <div class="org-content-wrapper">
-                    <div class="org-list-header">
-                        <h2>Vaqt parametrlari</h2>
-                    </div>
-
                     <div class="org-list-container" style="padding: 32px;">
                         <div class="org-empty-state">
                             <div class="org-empty-state-icon">🕐</div>
@@ -3166,10 +3239,6 @@
                 </div>
 
                 <div class="org-content-wrapper">
-                    <div class="org-list-header">
-                        <h2>Tizim sozlamalari</h2>
-                    </div>
-
                     <div class="org-list-container" style="padding: 24px;">
                         <div style="width: 100%; max-width: 1200px; margin: 0 auto;">
                             <div
@@ -3691,7 +3760,7 @@
             });
 
             // Change language function
-            window.changeLanguage = function (lang, spanId, dropdownId) {
+            window.changeLanguage = function (lang) {
                 currentLang = lang;
                 localStorage.setItem('language', lang);
 
@@ -3701,23 +3770,13 @@
                     'en': 'Eng'
                 };
 
-                // Update current language span if provided
-                if (spanId) {
-                    const span = document.getElementById(spanId);
-                    if (span) {
-                        span.textContent = langMap[lang] || 'O\'z';
-                    }
-                } else if (currentLanguageSpan) {
+                // Update current language span
+                if (currentLanguageSpan) {
                     currentLanguageSpan.textContent = langMap[lang] || 'O\'z';
                 }
 
-                // Update dropdown if provided
-                if (dropdownId) {
-                    const dropdown = document.getElementById(dropdownId);
-                    if (dropdown) {
-                        dropdown.style.display = 'none';
-                    }
-                } else if (languageDropdown) {
+                // Close dropdown
+                if (languageDropdown) {
                     languageDropdown.style.display = 'none';
                 }
 
@@ -3764,6 +3823,37 @@
                     'en': 'Eng'
                 };
                 orgCurrentLanguageSpan.textContent = langMap[currentLang] || 'O\'z';
+            }
+
+            // Positions section language selector
+            const posLanguageSelector = document.querySelector('#positionsSection .language-selector');
+            const posLanguageDropdown = document.getElementById('languageDropdownPos');
+            const posCurrentLanguageSpan = document.getElementById('currentLanguagePos');
+
+            if (posLanguageSelector) {
+                posLanguageSelector.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (posLanguageDropdown) {
+                        posLanguageDropdown.style.display = posLanguageDropdown.style.display === 'none' ? 'block' : 'none';
+                    }
+                });
+            }
+
+            // Close pos dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (posLanguageDropdown && posLanguageSelector && !posLanguageSelector.contains(e.target) && !posLanguageDropdown.contains(e.target)) {
+                    posLanguageDropdown.style.display = 'none';
+                }
+            });
+
+            // Set initial language for pos section
+            if (posCurrentLanguageSpan) {
+                const langMap = {
+                    'uz': 'O\'z',
+                    'ru': 'Ru',
+                    'en': 'Eng'
+                };
+                posCurrentLanguageSpan.textContent = langMap[currentLang] || 'O\'z';
             }
 
             const statusDot = document.getElementById('statusDot');
@@ -3903,40 +3993,93 @@
             }
 
             function computeProductivity(user) {
-                // Agar 12:00 dan keyin kelgan bo'lsa (absent), KPI = 0%
-                if (user.isAbsent) {
-                    return {
-                        percent: 0,
-                        label: 'Absent',
-                        badgeClass: 'badge-absent',
-                        kpiClass: 'kpi-low'
-                    };
+                // Agar absent yoki kech qolgan bo'lsa va sababli/sababsiz belgilangan bo'lsa
+                if (user.isAbsent || user.minutesLateToday > 0) {
+                    if (user.isExcused === true) {
+                        // Sababli = 100% KPI
+                        return {
+                            percent: 100,
+                            label: 'Sababli',
+                            badgeClass: 'badge-ontime',
+                            kpiClass: 'kpi-high'
+                        };
+                    } else if (user.isExcused === false) {
+                        // Sababsiz = 0% KPI
+                        return {
+                            percent: 0,
+                            label: 'Sababsiz',
+                            badgeClass: 'badge-absent',
+                            kpiClass: 'kpi-low'
+                        };
+                    }
+                    // Belgilanmagan bo'lsa, oddiy hisoblash
+                    if (user.isAbsent) {
+                        return {
+                            percent: 0,
+                            label: 'Kelmagan',
+                            badgeClass: 'badge-absent',
+                            kpiClass: 'kpi-low'
+                        };
+                    }
                 }
 
-                // Ish vaqti: 9:00 dan 12:00 gacha kechikish hisoblanadi
-                // KPI hisoblash: 9:00 dan 12:00 gacha = 180 daqiqa (3 soat)
-                // Agar 12:00 dan oldin kelsa, kechikish 9:00 dan hisoblanadi
-                const WORK_DURATION_MINUTES = 180; // 9:00 dan 12:00 gacha = 3 soat = 180 daqiqa
+                let arrivalKPI = 0; // Kelish KPI (9:00-18:00 = 100%)
+                let departureKPI = 0; // Ketish KPI (18:00-23:59 = 30%)
+                let totalKPI = 0;
 
-                // Kech qolgan daqiqalar (faqat 9:00 dan 12:00 gacha)
-                const minutesLate = user.minutesLateToday || 0;
+                // Kelish KPI hisoblash (9:00 dan 18:00 gacha = 100%)
+                if (user.lastArrivalTime) {
+                    const arrivalTime = new Date(user.lastArrivalTime);
+                    const today = new Date(arrivalTime);
+                    today.setHours(0, 0, 0, 0);
 
-                // KPI hisoblash: (180 - kech qolgan daqiqalar) / 180 * 100
-                let kpiPercent = 0;
-                if (minutesLate <= WORK_DURATION_MINUTES) {
-                    kpiPercent = Math.round(((WORK_DURATION_MINUTES - minutesLate) / WORK_DURATION_MINUTES) * 100);
-                } else {
-                    // Agar 180 daqiqadan ko'p kech qolsa, KPI = 0%
-                    kpiPercent = 0;
+                    // 9:00 va 18:00 chegaralari
+                    const workStart = new Date(today);
+                    workStart.setHours(9, 0, 0, 0);
+                    const workEnd = new Date(today);
+                    workEnd.setHours(18, 0, 0, 0);
+
+                    // Agar 9:00 dan 18:00 gacha kelgan bo'lsa = 100%
+                    if (arrivalTime >= workStart && arrivalTime <= workEnd) {
+                        arrivalKPI = 100;
+                    } else if (arrivalTime < workStart) {
+                        // 9:00 dan oldin kelgan = 100%
+                        arrivalKPI = 100;
+                    } else {
+                        // 18:00 dan keyin kelgan = 0% (kelish KPI yo'q)
+                        arrivalKPI = 0;
+                    }
                 }
+
+                // Ketish KPI hisoblash (18:00 dan 23:59 gacha = 30%)
+                if (user.lastDepartureTime) {
+                    const departureTime = new Date(user.lastDepartureTime);
+                    const today = new Date(departureTime);
+                    today.setHours(0, 0, 0, 0);
+
+                    // 18:00 va 23:59 chegaralari
+                    const departureStart = new Date(today);
+                    departureStart.setHours(18, 0, 0, 0);
+                    const departureEnd = new Date(today);
+                    departureEnd.setHours(23, 59, 59, 999);
+
+                    // Agar 18:00 dan 23:59 gacha ketgan bo'lsa = 30%
+                    if (departureTime >= departureStart && departureTime <= departureEnd) {
+                        departureKPI = 30;
+                    }
+                }
+
+                // Umumiy KPI = Kelish KPI + Ketish KPI
+                totalKPI = arrivalKPI + departureKPI;
+                if (totalKPI > 130) totalKPI = 130; // Maksimal 130%
 
                 // Label va rang belgilash
                 let label, badgeClass, kpiClass;
-                if (kpiPercent >= 80) {
+                if (totalKPI >= 100) {
                     label = 'High';
                     badgeClass = 'badge-ontime';
                     kpiClass = 'kpi-high';
-                } else if (kpiPercent >= 50) {
+                } else if (totalKPI >= 50) {
                     label = 'Medium';
                     badgeClass = 'badge-neutral';
                     kpiClass = 'kpi-medium';
@@ -3946,15 +4089,45 @@
                     kpiClass = 'kpi-low';
                 }
 
-                return { label, badgeClass, percent: kpiPercent, kpiClass };
+                return { label, badgeClass, percent: totalKPI, kpiClass, arrivalKPI, departureKPI };
             }
 
-            // Oylik KPI hisoblash
-            function calculateMonthlyKPI(user) {
-                // Oylik KPI = oylik davomida kelgan kunlar soni / ish kunlari soni * 100
-                // Hozirgi vaqtda oddiy yondashuv: bugungi KPI ni oylik sifatida ko'rsatamiz
-                // Keyinchalik oylik ma'lumotlarni to'plab, to'g'ri hisoblash mumkin
+            // Oylik KPI o'rtachasini yuklash
+            let monthlyKPIMap = new Map(); // userId -> averageKPI
+            
+            async function loadMonthlyKPIs() {
+                try {
+                    const now = new Date();
+                    const month = now.getMonth() + 1;
+                    const year = now.getFullYear();
+                    
+                    const response = await fetch(`/api/employees/monthly-kpi?month=${month}&year=${year}`, {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.kpis) {
+                            monthlyKPIMap.clear();
+                            result.kpis.forEach(kpi => {
+                                monthlyKPIMap.set(kpi.userId, kpi.averageKPI);
+                            });
+                            // Re-render active employees cards with updated KPI
+                            const allUsers = Array.from(users.values());
+                            renderActiveEmployeesCards(allUsers);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error loading monthly KPIs:', err);
+                }
+            }
 
+            // Oylik KPI hisoblash (cache'dan olish)
+            function calculateMonthlyKPI(user) {
+                if (user.userId && monthlyKPIMap.has(user.userId)) {
+                    return monthlyKPIMap.get(user.userId);
+                }
+                // Agar oylik KPI topilmasa, bugungi KPI ni qaytar
                 const prod = computeProductivity(user);
                 return prod.percent;
             }
@@ -4045,17 +4218,19 @@
                     second: '2-digit'
                 });
 
-                // Lateness vs 22:55
+                // Lateness vs onTimeThreshold
                 if (lastLateEl) {
-                    const start = new Date(date);
-                    start.setHours(22, 55, 0, 0);
+                    const today = new Date(date);
+                    today.setHours(0, 0, 0, 0);
+                    const onTimeDeadline = new Date(today);
+                    onTimeDeadline.setHours(timeSettings.onTimeThreshold.hours, timeSettings.onTimeThreshold.minutes, 0, 0);
 
                     lastLateEl.classList.remove('ontime', 'late');
-                    if (date <= start) {
-                        lastLateEl.textContent = 'On time';
+                    if (date <= onTimeDeadline) {
+                        lastLateEl.textContent = 'Vaqtida';
                         lastLateEl.classList.add('ontime');
                     } else {
-                        const diffMs = date.getTime() - start.getTime();
+                        const diffMs = date.getTime() - onTimeDeadline.getTime();
                         const diffMin = Math.round(diffMs / 60000);
                         lastLateEl.textContent = `Late: ${diffMin} min`;
                         lastLateEl.classList.add('late');
@@ -4186,6 +4361,45 @@
                 }
             }
 
+            // Load today's attendance records to get is_excused status
+            async function loadTodayAttendance() {
+                try {
+                    const today = new Date().toISOString().split('T')[0];
+                    const response = await fetch(`/api/attendance?date=${today}`, {
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.records && result.records.length > 0) {
+                            // Create a map of attendance data by userId
+                            const attendanceMap = new Map();
+                            result.records.forEach(record => {
+                                if (record.user_id) {
+                                    attendanceMap.set(record.user_id, {
+                                        attendanceId: record.id,
+                                        isExcused: record.is_excused
+                                    });
+                                }
+                            });
+
+                            // Merge with existing user data
+                            for (const [key, user] of users.entries()) {
+                                const attendance = attendanceMap.get(user.userId);
+                                if (attendance) {
+                                    user.attendanceId = attendance.attendanceId;
+                                    user.isExcused = attendance.isExcused;
+                                    users.set(key, user);
+                                }
+                            }
+                            // Re-render table after updating attendance data
+                            renderEmployeesTable();
+                        }
+                    }
+                } catch (err) {
+                    // Silently ignore errors
+                }
+            }
+
             function updateUsersFromEvent(event) {
                 if (!event || event.code !== 'AccessControl') {
                     return;
@@ -4212,35 +4426,39 @@
                 const cardName = extractField(data, 'CardName') || extractField(data, 'cardName') || 'Unknown';
                 const position = data.Position || data.JobTitle || data.Title || '-';
 
-                // Yangi vaqt hisoblash qoidalari:
-                // - 22:55 gacha = vaqtida kelganlar (minutesLate = 0)
-                // - 22:59 gacha = kech qolganlar (minutesLate > 0)
-                // - 23:00 dan keyin = kelmaganlar (isAbsent = true)
-                // - 23:02 dan keyin = ketganlar
-                const workStart = new Date(now);
-                workStart.setHours(22, 0, 0, 0); // 22:00 for calculation
+                // Vaqt hisoblash qoidalari (database sozlamalaridan):
+                // - onTimeThreshold gacha = vaqtida kelganlar (minutesLate = 0)
+                // - lateThreshold gacha = kech qolganlar (minutesLate > 0)
+                // - absentThreshold dan keyin = kelmaganlar (isAbsent = true)
+                // - departureStartTime dan keyin = ketganlar
+                const today = new Date(now);
+                today.setHours(0, 0, 0, 0);
 
-                const onTimeDeadline = new Date(now);
-                onTimeDeadline.setHours(22, 55, 0, 0); // 22:55 - vaqtida kelganlar
+                const workStart = new Date(today);
+                workStart.setHours(timeSettings.onTimeThreshold.hours, timeSettings.onTimeThreshold.minutes, 0, 0);
 
-                const lateDeadline = new Date(now);
-                lateDeadline.setHours(22, 59, 59, 999); // 22:59 - kech qolganlar
+                const onTimeDeadline = new Date(today);
+                onTimeDeadline.setHours(timeSettings.onTimeThreshold.hours, timeSettings.onTimeThreshold.minutes, 0, 0);
 
-                const absentDeadline = new Date(now);
-                absentDeadline.setHours(23, 0, 0, 0); // 23:00 - kelmaganlar
+                const lateDeadline = new Date(today);
+                lateDeadline.setHours(timeSettings.lateThreshold.hours, timeSettings.lateThreshold.minutes, 59, 999);
+
+                const absentDeadline = new Date(today);
+                absentDeadline.setHours(timeSettings.absentThreshold.hours, timeSettings.absentThreshold.minutes, 0, 0);
 
                 let minutesLate = 0;
                 let isAbsent = false;
 
                 if (now >= absentDeadline) {
-                    // 23:00 dan keyin = kelmaganlar
+                    // Absent threshold dan keyin = kelmaganlar
                     isAbsent = true;
                     minutesLate = 0;
                 } else if (now > onTimeDeadline) {
-                    // 22:55 dan 22:59 gacha = kech qolganlar
+                    // OnTime threshold dan keyin, late threshold gacha = kech qolganlar
                     minutesLate = Math.round((now.getTime() - workStart.getTime()) / 60000);
+                    if (minutesLate < 0) minutesLate = 0;
                 } else {
-                    // 22:55 gacha = vaqtida kelganlar
+                    // OnTime threshold gacha = vaqtida kelganlar
                     minutesLate = 0;
                 }
 
@@ -4250,9 +4468,9 @@
 
                 let user = users.get(key);
                 if (!user) {
-                    // Ketish vaqtini aniqlash: agar 23:02 dan keyin scan qilsa, bu "ketdi" deb hisoblanadi
-                    const departureTime = new Date(now);
-                    departureTime.setHours(23, 2, 0, 0); // 23:02 - ketganlar
+                    // Ketish vaqtini aniqlash: departureStartTime dan keyin scan qilsa, bu "ketdi" deb hisoblanadi
+                    const departureTime = new Date(today);
+                    departureTime.setHours(timeSettings.departureStartTime.hours, timeSettings.departureStartTime.minutes, 0, 0);
 
                     const hasDeparted = now > departureTime;
 
@@ -4299,16 +4517,16 @@
                     }
                     user.lastSeenAt = nowIso;
 
-                    // Ketish vaqtini aniqlash: agar 23:02 dan keyin scan qilsa, bu "ketdi" deb hisoblanadi
-                    const departureTime = new Date(now);
-                    departureTime.setHours(23, 2, 0, 0); // 23:02 - ketganlar
+                    // Ketish vaqtini aniqlash: departureStartTime dan keyin scan qilsa, bu "ketdi" deb hisoblanadi
+                    const departureTime = new Date(today);
+                    departureTime.setHours(timeSettings.departureStartTime.hours, timeSettings.departureStartTime.minutes, 0, 0);
 
                     if (now > departureTime) {
-                        // 18:00 dan keyin scan qilgan = ketdi
+                        // DepartureStartTime dan keyin scan qilgan = ketdi
                         user.lastDepartureTime = nowIso;
                         user.hasDeparted = true;
                     } else {
-                        // 18:00 dan oldin = kelgan
+                        // DepartureStartTime dan oldin = kelgan
                         user.lastArrivalTime = nowIso;
                         user.hasDeparted = false;
                     }
@@ -4395,7 +4613,7 @@
                     const message = searchQuery.trim()
                         ? 'Qidiruv bo\'yicha xodimlar topilmadi.'
                         : 'AccessControl hodisalarini kutish...';
-                    row.innerHTML = `<td colspan="11" class="empty-row">${message}</td>`;
+                    row.innerHTML = `<td colspan="13" class="empty-row">${message}</td>`;
                     employeesBody.appendChild(row);
                 } else {
                     let lateCount = 0;
@@ -4449,13 +4667,13 @@
 
                         let lateText, lateBadgeClass;
                         if (user.isAbsent) {
-                            lateText = 'Absent';
+                            lateText = 'Kelmagan';
                             lateBadgeClass = 'badge-absent';
                         } else if (user.minutesLateToday > 0) {
-                            lateText = `${user.minutesLateToday} min late`;
+                            lateText = `${user.minutesLateToday} min kech`;
                             lateBadgeClass = 'badge-late';
                         } else {
-                            lateText = 'On time';
+                            lateText = 'Vaqtida';
                             lateBadgeClass = 'badge-ontime';
                         }
 
@@ -4470,7 +4688,53 @@
                             photoCell = `<div class="user-photo-placeholder">${initials}</div>`;
                         }
 
-                        row.innerHTML = `
+                        // Ketish vaqtini ko'rsatish
+                    let departureTimeDisplay = '-';
+                    if (user.lastDepartureTime) {
+                        departureTimeDisplay = new Date(user.lastDepartureTime).toLocaleTimeString('en-US', {
+                            hour12: false,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                    }
+
+                    // Sababli/Sababsiz badge (faqat kelmaganlar va kech qolganlar uchun)
+                    let excuseDropdown = '-';
+                    const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.username === 'admin');
+                    const needsExcuse = user.isAbsent || user.minutesLateToday > 0;
+                    
+                    if (needsExcuse) {
+                        const attendanceId = user.attendanceId || '';
+                        // Default: sababsiz (null yoki false)
+                        const currentExcuse = user.isExcused === true ? 'excused' : 'not_excused';
+                        const excuseText = currentExcuse === 'excused' ? 'Sababli' : 'Sababsiz';
+                        const excuseBadgeClass = currentExcuse === 'excused' ? 'badge-ontime' : 'badge-absent';
+                        
+                        if (isAdmin) {
+                            // Admin uchun: kichik badge, ustiga bosilganda dropdown ochiladi
+                            excuseDropdown = `
+                                <div class="excuse-badge-wrapper" style="position: relative; display: inline-block;">
+                                    <span class="excuse-badge ${excuseBadgeClass}" 
+                                          data-attendance-id="${attendanceId}" 
+                                          data-user-id="${user.userId}"
+                                          data-current="${currentExcuse}"
+                                          style="cursor: pointer; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; display: inline-block;">
+                                        ${excuseText}
+                                    </span>
+                                    <div class="excuse-dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; min-width: 120px; overflow: hidden;">
+                                        <div class="excuse-option" data-value="excused" style="padding: 8px 12px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s; ${currentExcuse === 'excused' ? 'background: #f0fdf4; color: #16a34a;' : ''}">Sababli</div>
+                                        <div class="excuse-option" data-value="not_excused" style="padding: 8px 12px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s; border-top: 1px solid #e2e8f0; ${currentExcuse === 'not_excused' ? 'background: #fef2f2; color: #dc2626;' : ''}">Sababsiz</div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // Admin bo'lmaganlar uchun faqat ko'rsatish
+                            excuseDropdown = `<span class="badge ${excuseBadgeClass}" style="font-size: 0.75rem; padding: 4px 8px;">${excuseText}</span>`;
+                        }
+                    }
+
+                    row.innerHTML = `
                     <td>${user.userId || '-'}</td>
                     <td>${photoCell}</td>
                     <td>
@@ -4486,7 +4750,9 @@
                     <td>${user.email || '-'}</td>
                     <td>${arrivalDate}</td>
                     <td>${arrivalTime}</td>
+                    <td>${departureTimeDisplay}</td>
                     <td><span class="badge ${lateBadgeClass}">${lateText}</span></td>
+                    <td>${excuseDropdown}</td>
                     <td><span class="kpi-value ${prod.kpiClass || ''}">${prod.percent}%</span></td>
                 `;
 
@@ -4506,6 +4772,88 @@
                             });
                         }, 50);
                     }
+
+                    // Add event listeners for excuse badges
+                    setTimeout(() => {
+                        document.querySelectorAll('.excuse-badge').forEach(badge => {
+                            const wrapper = badge.closest('.excuse-badge-wrapper');
+                            const dropdown = wrapper ? wrapper.querySelector('.excuse-dropdown-menu') : null;
+                            
+                            if (!dropdown) return;
+                            
+                            // Badge ustiga bosilganda dropdown ochiladi/yopiladi
+                            badge.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                // Boshqa dropdown'larni yopish
+                                document.querySelectorAll('.excuse-dropdown-menu').forEach(menu => {
+                                    if (menu !== dropdown) menu.style.display = 'none';
+                                });
+                                dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                            });
+                            
+                            // Dropdown option'larni bosilganda
+                            dropdown.querySelectorAll('.excuse-option').forEach(option => {
+                                option.addEventListener('click', async function(e) {
+                                    e.stopPropagation();
+                                    const attendanceId = badge.getAttribute('data-attendance-id');
+                                    const userId = badge.getAttribute('data-user-id');
+                                    const value = this.getAttribute('data-value');
+                                    
+                                    if (!attendanceId || !userId) {
+                                        console.error('Missing attendance ID or user ID');
+                                        return;
+                                    }
+
+                                    // Determine is_excused value
+                                    let isExcused = null;
+                                    if (value === 'excused') {
+                                        isExcused = true;
+                                    } else if (value === 'not_excused') {
+                                        isExcused = false;
+                                    }
+
+                                    try {
+                                        const response = await fetch(`/api/attendance/${attendanceId}/excuse`, {
+                                            method: 'PUT',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            credentials: 'include',
+                                            body: JSON.stringify({ is_excused: isExcused })
+                                        });
+
+                                        const data = await response.json();
+                                        if (data.success) {
+                                            // Update user object
+                                            const user = users.get(userId);
+                                            if (user) {
+                                                user.isExcused = isExcused;
+                                                user.attendanceId = attendanceId;
+                                                // Re-render table to update KPI
+                                                renderEmployeesTable();
+                                            }
+                                        } else {
+                                            alert('Xatolik: ' + (data.message || 'Sababli/sababsiz holatni yangilashda xatolik'));
+                                        }
+                                    } catch (error) {
+                                        console.error('Error updating excuse status:', error);
+                                        alert('Xatolik: Server bilan aloqa qilishda muammo');
+                                    }
+                                    
+                                    dropdown.style.display = 'none';
+                                });
+                            });
+                        });
+                        
+                        // Click outside to close dropdowns
+                        document.addEventListener('click', function(e) {
+                            if (!e.target.closest('.excuse-badge-wrapper')) {
+                                document.querySelectorAll('.excuse-dropdown-menu').forEach(menu => {
+                                    menu.style.display = 'none';
+                                });
+                            }
+                        });
+                    }, 100);
                 }
 
                 if (usersTotalEl) {
@@ -4553,8 +4901,13 @@
                     return userDate.getTime() >= thirtyDaysAgo.getTime() && userDate.getTime() <= today.getTime();
                 });
 
-                // Sort by arrival time (most recent first)
+                // Sort by monthly average KPI (highest first), then by arrival time
                 activeUsers.sort((a, b) => {
+                    const aKPI = calculateMonthlyKPI(a);
+                    const bKPI = calculateMonthlyKPI(b);
+                    if (aKPI !== bKPI) {
+                        return bKPI - aKPI; // Sort by monthly KPI descending
+                    }
                     const aTime = a.lastArrivalTime || a.lastSeenAt;
                     const bTime = b.lastArrivalTime || b.lastSeenAt;
                     if (!aTime) return 1;
@@ -4610,8 +4963,18 @@
 
                     const organization = user.organization || 'Lavozim ko\'rsatilmagan';
 
-                    // Calculate monthly KPI
+                    // Calculate monthly average KPI
                     const monthlyKPI = calculateMonthlyKPI(user);
+                    
+                    // Determine KPI class based on value
+                    let kpiClass = '';
+                    if (monthlyKPI >= 100) {
+                        kpiClass = 'kpi-high';
+                    } else if (monthlyKPI >= 50) {
+                        kpiClass = 'kpi-medium';
+                    } else {
+                        kpiClass = 'kpi-low';
+                    }
 
                     // Employee number (1-based index)
                     const employeeNumber = index + 1;
@@ -4627,7 +4990,7 @@
                         <div class="active-employee-details">${organization}</div>
                     </div>
                     <div class="active-employee-status">
-                        <div class="active-employee-kpi">${monthlyKPI}%</div>
+                        <div class="active-employee-kpi ${kpiClass}">${monthlyKPI}%</div>
                         ${statusBadge}
                     </div>
                 </div>
@@ -4992,6 +5355,9 @@
                     });
                 }
 
+                // Update sidebar menu based on role
+                updateSidebarMenuByRole(currentUser ? currentUser.role : 'admin');
+
                 // Re-render table to show/hide edit buttons
                 setTimeout(() => {
                     if (typeof renderEmployeesTable === 'function') {
@@ -5007,6 +5373,40 @@
                         }, 100);
                     }
                 }, 200);
+            }
+
+            // Update sidebar menu based on user role
+            function updateSidebarMenuByRole(userRole) {
+                const menuItems = document.querySelectorAll('.sidebar-menu-item');
+                menuItems.forEach(item => {
+                    const link = item.querySelector('.sidebar-menu-link');
+                    if (!link) return;
+                    
+                    const linkText = link.textContent.trim();
+                    const isLogout = linkText === 'Chiqish' || link.href && link.href.includes('login.html');
+                    
+                    // Super admin va admin uchun barcha menyu ko'rinadi
+                    if (userRole === 'superadmin' || userRole === 'admin') {
+                        item.style.display = '';
+                    }
+                    // Kadr uchun: Dashboard, Tashkilotlar, Bo'limlar, Xodimlar, Sozlamalar
+                    else if (userRole === 'kadr') {
+                        if (linkText === 'Dashboard' || linkText === 'Tashkilotlar' || linkText === 'Bo\'limlar' || 
+                            linkText === 'Xodimlar' || linkText === 'Sozlamalar' || isLogout) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                    // Foydalanuvchi uchun: faqat Dashboard va Sozlamalar
+                    else if (userRole === 'foydalanuvchi') {
+                        if (linkText === 'Dashboard' || linkText === 'Sozlamalar' || isLogout) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
             }
 
             // Edit Employee Modal Functions (global for onclick)
@@ -5236,7 +5636,40 @@
             }
 
             // Time period filter select, status filter, search input, statistics period, and export button
-            document.addEventListener('DOMContentLoaded', () => {
+            // Global time settings
+            let timeSettings = {
+                onTimeThreshold: { hours: 9, minutes: 10 },
+                lateThreshold: { hours: 12, minutes: 0 },
+                absentThreshold: { hours: 13, minutes: 0 },
+                departureStartTime: { hours: 18, minutes: 0 }
+            };
+
+            // Load time settings from API
+            async function loadTimeSettings() {
+                try {
+                    const response = await fetch('/api/time-settings');
+                    const data = await response.json();
+                    if (data.success && data.settings) {
+                        const parseTime = (timeStr) => {
+                            const [hours, minutes] = timeStr.split(':').map(Number);
+                            return { hours, minutes };
+                        };
+                        timeSettings = {
+                            onTimeThreshold: parseTime(data.settings.onTimeThreshold),
+                            lateThreshold: parseTime(data.settings.lateThreshold),
+                            absentThreshold: parseTime(data.settings.absentThreshold),
+                            departureStartTime: parseTime(data.settings.departureStartTime)
+                        };
+                    }
+                } catch (error) {
+                    console.error('Error loading time settings:', error);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                // Load time settings first
+                await loadTimeSettings();
+
                 const periodSelect = document.getElementById('periodSelect');
                 if (periodSelect) {
                     currentPeriod = 'daily';
@@ -5307,6 +5740,15 @@
 
                     // Load all employees data and merge
                     await loadAllEmployees();
+                    
+                    // Load today's attendance records for excuse status
+                    await loadTodayAttendance();
+                    
+                    // Load monthly KPIs for active employees
+                    await loadMonthlyKPIs();
+                    
+                    // Update monthly KPIs every 5 minutes
+                    setInterval(loadMonthlyKPIs, 5 * 60 * 1000);
 
                     // Connect for real-time updates
                     connect();
@@ -5653,20 +6095,40 @@
                 }
 
                 tbody.innerHTML = orgs.map((org, index) => `
-            <tr style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
-                <td style="padding: 12px 16px; color: #6b7280; font-weight: 500;">${index + 1}</td>
-                <td style="padding: 12px 16px; color: #111827; font-weight: 600;">${org.name || '-'}</td>
-                <td style="padding: 12px 16px; color: #111827;">${org.employee_count || '-'}</td>
-                <td style="padding: 12px 16px; color: #111827;">${org.phone || '-'}</td>
-                <td style="padding: 12px 16px; color: #111827;">${org.email || '-'}</td>
-                <td style="padding: 12px 16px; text-align: center;">
+            <tr style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;" 
+                onmouseover="this.style.background='#f9fafb'" 
+                onmouseout="this.style.background='#ffffff'">
+                <td style="padding: 14px 16px; color: #6b7280; font-weight: 500; font-size: 0.875rem;">
+                    ${index + 1}
+                </td>
+                <td style="padding: 14px 16px; color: #111827; font-weight: 600; font-size: 0.875rem;">
+                    ${org.name || '-'}
+                </td>
+                <td style="padding: 14px 16px; color: #111827; font-weight: 500; font-size: 0.875rem;">
+                    ${org.employee_count || '-'}
+                </td>
+                <td style="padding: 14px 16px; color: #111827; font-weight: 500; font-size: 0.875rem;">
+                    ${org.phone || '<span style="color: #9ca3af;">-</span>'}
+                </td>
+                <td style="padding: 14px 16px; color: #111827; font-weight: 500; font-size: 0.875rem;">
+                    ${org.email || '<span style="color: #9ca3af;">-</span>'}
+                </td>
+                <td style="padding: 14px 16px; text-align: center;">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <button onclick="editOrganization(${org.id}, '${(org.name || '').replace(/'/g, "\\'")}', '', '${(org.phone || '').replace(/'/g, "\\'")}', '${(org.email || '').replace(/'/g, "\\'")}', '${(org.employee_count || '').toString().replace(/'/g, "\\'")}')" style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Tahrirlash">
+                        <button onclick="editOrganization(${org.id}, '${(org.name || '').replace(/'/g, "\\'")}', '', '${(org.phone || '').replace(/'/g, "\\'")}', '${(org.email || '').replace(/'/g, "\\'")}', '${(org.employee_count || '').toString().replace(/'/g, "\\'")}')" 
+                            style="padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" 
+                            onmouseover="this.style.background='#059669';" 
+                            onmouseout="this.style.background='#10b981';" 
+                            title="Tahrirlash">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px; fill: white;">
                                 <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                             </svg>
                         </button>
-                        <button onclick="deleteOrganization(${org.id}, '${(org.name || '').replace(/'/g, "\\'")}')" style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="O'chirish">
+                        <button onclick="deleteOrganization(${org.id}, '${(org.name || '').replace(/'/g, "\\'")}')" 
+                            style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" 
+                            onmouseover="this.style.background='#dc2626';" 
+                            onmouseout="this.style.background='#ef4444';" 
+                            title="O'chirish">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px; fill: white;">
                                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                             </svg>
