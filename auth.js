@@ -1,13 +1,11 @@
 const bcrypt = require('bcrypt');
 let dbAvailable = true;
 
-// Fallback admin user (if database is not available)
-const FALLBACK_ADMIN = {
-  username: 'admin',
-  password: 'admin123', // Plain text for fallback
-  fullName: 'Administrator',
-  role: 'admin'
-};
+// Fallback users (if database is not available)
+const FALLBACK_USERS = [
+  { username: 'superadmin', password: 'superadmin123', fullName: 'Super Administrator', role: 'superadmin' },
+  { username: 'admin', password: 'admin123', fullName: 'Administrator', role: 'admin' }
+];
 
 // Test database connection
 async function testDatabase() {
@@ -57,16 +55,17 @@ async function loginUser(username, password) {
     }
   }
 
-  // Fallback: Check against fallback admin (if database is not available)
-  if (username === FALLBACK_ADMIN.username && password === FALLBACK_ADMIN.password) {
+  // Fallback: check against fallback users (if database is not available)
+  const fallback = FALLBACK_USERS.find(u => u.username === username && u.password === password);
+  if (fallback) {
     console.log('[Auth] Using fallback authentication (database not available)');
     return {
       success: true,
       user: {
         id: 0,
-        username: FALLBACK_ADMIN.username,
-        fullName: FALLBACK_ADMIN.fullName,
-        role: FALLBACK_ADMIN.role
+        username: fallback.username,
+        fullName: fallback.fullName,
+        role: fallback.role
       }
     };
   }
@@ -87,25 +86,15 @@ function requireAuth(req, res, next) {
   return res.status(401).json({ success: false, message: 'Unauthorized' });
 }
 
-// Check if user is admin
+// Check if user is admin (or superadmin)
 function requireAdmin(req, res, next) {
-  console.log('[Auth] requireAdmin check:', {
-    hasSession: !!req.session,
-    hasUser: !!(req.session && req.session.user),
-    userRole: req.session && req.session.user ? req.session.user.role : 'none',
-    username: req.session && req.session.user ? req.session.user.username : 'none'
-  });
-  
   if (req.session && req.session.user) {
-    const role = req.session.user.role;
-    const username = req.session.user.username;
-    
-    // Allow if role is 'admin' or username is 'admin' (fallback)
-    if (role === 'admin' || role === 'superadmin' || username === 'admin') {
+    const role = (req.session.user.role || '').toString().toLowerCase();
+    const username = (req.session.user.username || '').toString().toLowerCase();
+    if (role === 'admin' || role === 'superadmin' || username === 'admin' || username === 'superadmin') {
       return next();
     }
   }
-  
   return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
 }
 

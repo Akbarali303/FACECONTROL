@@ -6,7 +6,7 @@ const multer = require('multer');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const { pool, initDatabase } = require('./database');
+const { pool, initDatabase, closePool } = require('./database');
 const { loginUser, requireAuth, requireAdmin } = require('./auth');
 
 const app = express();
@@ -25,6 +25,9 @@ const employeeMemoryStore = new Map(); // key: userId, value: { full_name, posit
 
 // SSE clients
 const sseClients = new Set();
+
+// Database availability (set by checkDatabase)
+let dbAvailable = true;
 
 // Middleware
 app.use(bodyParser.json());
@@ -194,9 +197,11 @@ app.post('/api/organizations', requireAuth, requireAdmin, async (req, res) => {
     if (dbAvailable) {
       try {
         const { pool } = require('./database');
+        const n = employee_count != null && String(employee_count).trim() !== '' ? parseInt(employee_count, 10) : 0;
+        const count = (typeof n === 'number' && !Number.isNaN(n) && n >= 0) ? n : 0;
         const result = await pool.query(
           'INSERT INTO organizations (name, description, phone, email, employee_count) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, description, phone, email, employee_count, created_at, updated_at',
-          [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, employee_count ? parseInt(employee_count) : 0]
+          [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, count]
         );
         return res.json({ success: true, organization: result.rows[0] });
       } catch (err) {
@@ -228,9 +233,11 @@ app.put('/api/organizations/:id', requireAuth, requireAdmin, async (req, res) =>
     if (dbAvailable) {
       try {
         const { pool } = require('./database');
+        const n = employee_count != null && String(employee_count).trim() !== '' ? parseInt(employee_count, 10) : 0;
+        const count = (typeof n === 'number' && !Number.isNaN(n) && n >= 0) ? n : 0;
         const result = await pool.query(
           'UPDATE organizations SET name = $1, description = $2, phone = $3, email = $4, employee_count = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING id, name, description, phone, email, employee_count, created_at, updated_at',
-          [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, employee_count ? parseInt(employee_count) : 0, id]
+          [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, count, id]
         );
 
         if (result.rows.length === 0) {
@@ -1206,10 +1213,24 @@ app.get('/api/time-settings', requireAuth, async (req, res) => {
   }
 });
 
+// Normalize time to HH:MM:SS
+function normalizeTime(s) {
+  if (!s || typeof s !== 'string') return '';
+  const t = s.trim();
+  if (!t) return '';
+  const parts = t.split(':').map(p => p.padStart(2, '0'));
+  if (parts.length === 2) return parts[0] + ':' + parts[1] + ':00';
+  if (parts.length >= 3) return parts[0] + ':' + parts[1] + ':' + parts[2];
+  return t;
+}
+
 // Update time settings
 app.put('/api/time-settings', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { onTimeThreshold, lateThreshold, absentThreshold, departureStartTime } = req.body;
+    const onTimeThreshold = normalizeTime(req.body.onTimeThreshold);
+    const lateThreshold = normalizeTime(req.body.lateThreshold);
+    const absentThreshold = normalizeTime(req.body.absentThreshold);
+    const departureStartTime = normalizeTime(req.body.departureStartTime);
 
     if (!onTimeThreshold || !lateThreshold || !absentThreshold || !departureStartTime) {
       return res.status(400).json({ success: false, message: 'Barcha maydonlar to\'ldirilishi kerak' });
@@ -1274,6 +1295,7 @@ app.get('/api/attendance', requireAuth, async (req, res) => {
             a.minutes_late,
             a.status,
             a.is_excused,
+            a.excuse_type,
             a.date,
             e.full_name,
             e.position,
@@ -1352,6 +1374,7 @@ app.get('/api/employees/monthly-kpi', requireAuth, async (req, res) => {
             a.minutes_late,
             a.status,
             a.is_excused,
+            a.excuse_type,
             a.date
           FROM attendance a
           WHERE a.date >= $1 AND a.date <= $2
@@ -1375,12 +1398,16 @@ app.get('/api/employees/monthly-kpi', requireAuth, async (req, res) => {
           
           // Calculate KPI for this day
           let dayKPI = 0;
-          
-          // Check if excused
-          if (record.is_excused === true) {
-            dayKPI = 100; // Sababli = 100%
-          } else if (record.is_excused === false) {
+          const et = record.excuse_type;
+
+          if (et === 'excused' || et === 'on_duty') {
+            dayKPI = 100; // Sababli yoki Safarda = 100%
+          } else if (et === 'not_excused') {
             dayKPI = 0; // Sababsiz = 0%
+          } else if (record.is_excused === true) {
+            dayKPI = 100; // Sababli (eski)
+          } else if (record.is_excused === false) {
+            dayKPI = 0; // Sababsiz (eski)
           } else {
             // Normal KPI calculation
             let arrivalKPI = 0;
@@ -1465,7 +1492,7 @@ app.get('/api/employees/monthly-kpi', requireAuth, async (req, res) => {
 app.put('/api/attendance/:id/excuse', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { is_excused } = req.body; // true = sababli, false = sababsiz, null = belgilanmagan
+        const { is_excused, excuse_type } = req.body; // excuse_type: 'excused'|'not_excused'|'on_duty'
 
     if (dbAvailable) {
       try {
@@ -1477,16 +1504,20 @@ app.put('/api/attendance/:id/excuse', requireAuth, requireAdmin, async (req, res
           return res.status(404).json({ success: false, message: 'Attendance record not found' });
         }
 
-        // Update is_excused status
+        const validTypes = ['excused', 'not_excused', 'on_duty'];
+        const excType = validTypes.includes(excuse_type) ? excuse_type : null;
+        const isExc = excType === 'excused' || excType === 'on_duty' ? true : (excType === 'not_excused' ? false : (is_excused === null ? null : Boolean(is_excused)));
+
         await pool.query(
           `UPDATE attendance 
            SET is_excused = $1,
+               excuse_type = $2,
                updated_at = CURRENT_TIMESTAMP
-           WHERE id = $2`,
-          [is_excused === null ? null : Boolean(is_excused), id]
+           WHERE id = $3`,
+          [isExc, excType, id]
         );
 
-        return res.json({ success: true, message: 'Sababli/sababsiz holati yangilandi' });
+        return res.json({ success: true, message: 'Status yangilandi' });
       } catch (err) {
         console.error('[API] Database error updating attendance excuse:', err.message);
         return res.status(500).json({ success: false, message: 'Database error' });
@@ -1503,6 +1534,9 @@ app.put('/api/attendance/:id/excuse', requireAuth, requireAdmin, async (req, res
 // Get events endpoint
 app.get('/api/public/events', async (req, res) => {
   try {
+    if (!dbAvailable) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
     const limit = Math.min(parseInt(req.query.limit || '500', 10), 2000);
 
     // Optional filters
@@ -1611,7 +1645,6 @@ app.get('/api/realtime', requireAuth, (req, res) => {
 });
 
 // Check if database is available
-let dbAvailable = true;
 async function checkDatabase() {
   try {
     const { pool } = require('./database');
@@ -1793,13 +1826,13 @@ async function addEvent(event) {
         const onTimeThreshold = parseTime(timeSettings.onTimeThreshold);
         const lateThreshold = parseTime(timeSettings.lateThreshold);
         const absentThreshold = parseTime(timeSettings.absentThreshold);
-        const workStartTime = parseTime(timeSettings.onTimeThreshold); // Use onTimeThreshold as work start
+        const workStartTime = parseTime(timeSettings.onTimeThreshold);
+        const departureThreshold = parseTime(timeSettings.departureStartTime || '18:00:00');
 
         const arrivalTime = new Date(eventWithTimestamp.receivedAt);
         const arrivalDate = new Date(arrivalTime);
         arrivalDate.setHours(0, 0, 0, 0);
 
-        // Create deadline dates
         const onTimeDeadline = new Date(arrivalDate);
         onTimeDeadline.setHours(onTimeThreshold.hours, onTimeThreshold.minutes, 0, 0);
 
@@ -1812,10 +1845,9 @@ async function addEvent(event) {
         const workStart = new Date(arrivalDate);
         workStart.setHours(workStartTime.hours, workStartTime.minutes, 0, 0);
 
-        // Check if this is a departure (after 18:00) or arrival (before 18:00)
-        const departureTime = new Date(today);
-        departureTime.setHours(timeSettings.departureStartTime.hours, timeSettings.departureStartTime.minutes, 0, 0);
-        const isDeparture = arrivalTime >= departureTime;
+        const departureDeadline = new Date(arrivalDate);
+        departureDeadline.setHours(departureThreshold.hours, departureThreshold.minutes, 0, 0);
+        const isDeparture = arrivalTime >= departureDeadline;
 
         let minutesLate = 0;
         let isAbsent = false;
@@ -2247,7 +2279,7 @@ async function startServer() {
     }
 
     // Start server
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`[Server] Listening on http://localhost:${PORT}`);
       console.log(`[Server] Health check: http://localhost:${PORT}/api/health`);
       console.log(`[Server] Login: http://localhost:${PORT}/login.html`);
@@ -2258,6 +2290,9 @@ async function startServer() {
       // Start Dahua stream connection
       startDahuaStream();
     });
+    
+    // Store server reference for graceful shutdown
+    global.server = server;
   } catch (err) {
     console.error('[Server] Failed to start:', err);
     process.exit(1);
@@ -2267,25 +2302,62 @@ async function startServer() {
 startServer();
 
 // Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n[Server] Shutting down...');
+async function gracefulShutdown(signal) {
+  console.log(`\n[Server] Received ${signal}, shutting down gracefully...`);
+  
+  // Stop accepting new requests
+  const server = global.server;
+  if (server) {
+    server.close(() => {
+      console.log('[Server] HTTP server closed');
+    });
+  }
+  
+  // Stop Dahua stream
   if (curlProcess) {
     curlProcess.kill();
+    curlProcess = null;
   }
   if (reconnectTimeout) {
     clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
   }
-  process.exit(0);
+  
+  // Close SSE connections
+  sseClients.forEach(client => {
+    try {
+      client.end();
+    } catch (err) {
+      // Ignore errors
+    }
+  });
+  sseClients.clear();
+  
+  // Close database pool
+  try {
+    await closePool();
+  } catch (err) {
+    console.error('[Server] Error closing database pool:', err.message);
+  }
+  
+  // Exit process
+  setTimeout(() => {
+    console.log('[Server] Shutdown complete');
+    process.exit(0);
+  }, 1000);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+// Handle uncaught errors
+process.on('uncaughtException', (err) => {
+  console.error('[Server] Uncaught Exception:', err);
+  gracefulShutdown('uncaughtException');
 });
 
-process.on('SIGTERM', () => {
-  console.log('\n[Server] Shutting down...');
-  if (curlProcess) {
-    curlProcess.kill();
-  }
-  if (reconnectTimeout) {
-    clearTimeout(reconnectTimeout);
-  }
-  process.exit(0);
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Server] Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit on unhandled rejection, just log it
 });
 

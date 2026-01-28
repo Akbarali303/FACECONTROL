@@ -19,14 +19,15 @@ const poolConfig = connectionString
     port: process.env.DB_PORT || 5432,
     database: process.env.DB_NAME || 'facecontrol',
     user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
+    password: process.env.DB_PASSWORD || process.env.DB_PASS || 'postgres',
   };
 
 const pool = new Pool({
   ...poolConfig,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  max: 10, // Reduce max connections to prevent too many open connections
+  idleTimeoutMillis: 10000, // Close idle connections after 10 seconds (was 30000)
+  connectionTimeoutMillis: 2000, // Fail fast if can't connect
+  allowExitOnIdle: false, // Don't exit when pool is idle
 });
 
 // Test connection
@@ -42,6 +43,29 @@ pool.on('error', (err) => {
 // Initialize database tables
 async function initDatabase() {
   try {
+    // Create organizations table first (users.organization_id references it)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS organizations (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(200) NOT NULL,
+        description TEXT,
+        phone VARCHAR(50),
+        email VARCHAR(200),
+        employee_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Add phone, email, employee_count columns if they don't exist (for existing databases)
+    try {
+      await pool.query('ALTER TABLE organizations ADD COLUMN IF NOT EXISTS phone VARCHAR(50)');
+      await pool.query('ALTER TABLE organizations ADD COLUMN IF NOT EXISTS email VARCHAR(200)');
+      await pool.query('ALTER TABLE organizations ADD COLUMN IF NOT EXISTS employee_count INTEGER DEFAULT 0');
+    } catch (err) {
+      // Columns might already exist, ignore error
+    }
+
     // Create users table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -157,23 +181,10 @@ async function initDatabase() {
     try {
       await pool.query('ALTER TABLE attendance ADD COLUMN IF NOT EXISTS is_excused BOOLEAN DEFAULT NULL');
       await pool.query('ALTER TABLE attendance ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
+      await pool.query("ALTER TABLE attendance ADD COLUMN IF NOT EXISTS excuse_type VARCHAR(20) DEFAULT NULL");
     } catch (err) {
       // Columns might already exist, ignore error
     }
-
-    // Create organizations table
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS organizations (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(200) NOT NULL,
-        description TEXT,
-        phone VARCHAR(50),
-        email VARCHAR(200),
-        employee_count INTEGER DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
 
     // Create time_settings table for time calculation rules
     await pool.query(`
@@ -210,15 +221,6 @@ async function initDatabase() {
           WHERE id = (SELECT id FROM time_settings ORDER BY id DESC LIMIT 1)
         `);
       }
-    }
-
-    // Add phone, email, and employee_count columns if they don't exist (for existing databases)
-    try {
-      await pool.query('ALTER TABLE organizations ADD COLUMN IF NOT EXISTS phone VARCHAR(50)');
-      await pool.query('ALTER TABLE organizations ADD COLUMN IF NOT EXISTS email VARCHAR(200)');
-      await pool.query('ALTER TABLE organizations ADD COLUMN IF NOT EXISTS employee_count INTEGER DEFAULT 0');
-    } catch (err) {
-      // Columns might already exist, ignore error
     }
 
     // Create departments table
@@ -280,5 +282,16 @@ async function initDatabase() {
   }
 }
 
-module.exports = { pool, initDatabase };
+// Graceful shutdown function
+async function closePool() {
+  try {
+    console.log('[DB] Closing database connection pool...');
+    await pool.end();
+    console.log('[DB] Database connection pool closed successfully');
+  } catch (err) {
+    console.error('[DB] Error closing pool:', err.message);
+  }
+}
+
+module.exports = { pool, initDatabase, closePool };
 

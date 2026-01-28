@@ -3,499 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/index.css">
+    <script src="/js/mobile-menu.js" defer></script>
     <title>Bo'limlar - FOREST HR</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
-        }
-
-        html, body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
-        }
-
-        body {
-            background: #f3f4f6;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
-            display: flex;
-        }
-
-        input, textarea, select, button, a, span, div, p, h1, h2, h3, h4, h5, h6, li, ul, ol, table, th, td, label {
-            font-family: inherit;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: #1f2937;
-            border-right: 1px solid #374151;
-            min-height: 100vh;
-            padding: 0;
-            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            left: 0;
-            top: 0;
-            overflow-y: auto;
-            z-index: 1000;
-            scrollbar-width: thin;
-            scrollbar-color: #4b5563 #1f2937;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: #1f2937;
-            border-radius: 3px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 3px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
-        }
-
-        .sidebar-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #374151;
-            background: #1f2937;
-            margin-bottom: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            position: relative;
-        }
-
-        .sidebar-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #10b981;
-        }
-
-        .sidebar-logo {
-            width: 131px;
-            height: 131px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-        }
-
-        .sidebar-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 8px;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.4rem;
-            font-weight: 400;
-            color: #ffffff;
-            margin: 0;
-            letter-spacing: 2px;
-            text-align: center;
-            text-transform: uppercase;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-        }
-
-        .sidebar-header .subtitle {
-            font-size: 0.75rem;
-            font-weight: 400;
-            color: #94a3b8;
-            margin: 0;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 8px 0;
-            margin: 0;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .sidebar-menu-item {
-            margin: 4px 12px;
-        }
-
-        .sidebar-menu-icon {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sidebar-menu-icon svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor;
-        }
-
-        .sidebar-menu-link {
-            display: flex;
-            align-items: center;
-            padding: 14px 20px;
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 10px;
-        }
-
-        .sidebar-menu-link:hover:not(.active) {
-            background: #374151;
-            color: #ffffff;
-        }
-
-        .sidebar-menu-link.active {
-            background: #374151;
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        .sidebar-footer {
-            padding: 16px 20px;
-            text-align: center;
-            border-top: 1px solid #374151;
-            flex-shrink: 0;
-            background: #1f2937;
-        }
-
-        .sidebar-footer-text {
-            margin: 0;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            font-weight: 400;
-        }
-
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 100%;
-            margin: 0;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            overflow: visible;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        .header {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .header-left {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #111827;
-            letter-spacing: -0.3px;
-        }
-
-        .header p {
-            margin: 0;
-            font-size: 0.875rem;
-            color: #6b7280;
-            font-weight: 400;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            position: relative;
-        }
-
-        .org-content-wrapper {
-            padding: 32px;
-            background: #ffffff;
-        }
-
-        .org-list-header {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .btn-create-org {
-            background: #2563eb;
-            color: #ffffff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-create-org:hover {
-            background: #1d4ed8;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-        }
-
-        .org-list-container {
-            background: #ffffff;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            overflow: hidden;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .org-list-container table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .org-list-container thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: #f9fafb;
-        }
-
-        .org-list-container th {
-            padding: 14px 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 2px solid #e5e7eb;
-            background: #f9fafb;
-            white-space: nowrap;
-            font-size: 0.875rem;
-        }
-
-        .org-list-container td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #e5e7eb;
-            color: #111827;
-            font-size: 0.875rem;
-        }
-
-        .org-list-container tbody tr:hover {
-            background: #f9fafb;
-        }
-
-        .org-loading-state {
-            text-align: center;
-            padding: 60px 40px;
-            color: #64748b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .org-loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e2e8f0;
-            border-top-color: #2563eb;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .org-loading-text {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .language-selector {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 8px;
-            padding: 8px 12px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            height: 40px;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        .language-selector:hover {
-            border-color: #10b981;
-            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1);
-        }
-
-        .language-dropdown {
-            display: none;
-            position: absolute;
-            top: 48px;
-            left: 0;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            min-width: 120px;
-            padding: 8px 0;
-        }
-
-        .language-option {
-            padding: 10px 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-
-        .language-option:hover {
-            background: #f9fafb;
-        }
-
-        .sidebar-user-profile {
-            margin: 0;
-            padding: 8px 12px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            height: 40px;
-            box-sizing: border-box;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .sidebar-user-profile:hover {
-            border-color: #10b981;
-            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
-        }
-
-        .sidebar-user-icon {
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            background: transparent;
-        }
-
-        .sidebar-user-icon img {
-            width: 22px;
-            height: 22px;
-            object-fit: contain;
-            background: transparent;
-            filter: brightness(1.2) contrast(1.1);
-        }
-
-        .sidebar-user-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .sidebar-user-name {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 2px;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: #ef4444;
-            color: #ffffff;
-            border-radius: 10px;
-            min-width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 0 5px;
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.3;
-            }
-        }
-
-        .email-icon-container {
-            position: relative;
-        }
-    </style>
+    
 </head>
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
-                <img src="/22.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
+                <img src="/uploads/Logo/22.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 8px;">
             </div>
             <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
                 <h2>FOREST HR</h2>
@@ -557,16 +75,6 @@
                 </a>
             </li>
             <li class="sidebar-menu-item">
-                <a href="/vaqt-sozlamalari.html" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
-                        </svg>
-                    </span>
-                    <span>Vaqt sozlamalari</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
                 <a href="/sozlamalar.html" class="sidebar-menu-link">
                     <span class="sidebar-menu-icon">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -601,6 +109,11 @@
             <p class="sidebar-footer-text" style="margin: 0; line-height: 1.5;">FORESTDIGITAL © 2026.<br>Designed & Developed By Akbarali</p>
         </div>
     </div>
+
+    <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menyu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="main-content">
         <div class="container">
@@ -661,7 +174,7 @@
                         onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';">
                         <div class="sidebar-user-icon"
                             style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent; border-radius: 50%;">
-                            <img src="/user-icon.png" alt="User Icon"
+                            <img src="/uploads/Icoonlar/galochka-3d-icon-png-download-11169918.webp" alt="User Icon"
                                 style="width: 24px; height: 24px; object-fit: contain;">
                         </div>
                         <div class="sidebar-user-info" style="flex: 1; min-width: 0;">
@@ -704,6 +217,44 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Bo'lim Modal -->
+    <div id="departmentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e5e7eb; background: #ffffff;">
+                <div class="header-left">
+                    <h1 id="departmentModalTitle" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #111827;">Bo'lim yaratish</h1>
+                    <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #6b7280; font-weight: 400;">Bo'limlar / Bo'lim yaratish</p>
+                </div>
+                <span class="modal-close" id="closeDeptModal" style="cursor: pointer; font-size: 24px; color: #6b7280; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: all 0.2s;"
+                    onmouseover="this.style.background='#f3f4f6'; this.style.color='#111827';"
+                    onmouseout="this.style.background=''; this.style.color='#6b7280';">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="departmentForm">
+                    <input type="hidden" id="deptId" name="deptId">
+                    <div class="form-group">
+                        <label for="deptOrganization">Tashkilot *</label>
+                        <select id="deptOrganization" name="deptOrganization" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; font-family: inherit;">
+                            <option value="">Tashkilotni tanlang</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="deptName">Bo'lim nomi *</label>
+                        <input type="text" id="deptName" name="deptName" required placeholder="Bo'lim nomini kiriting" autocomplete="organization">
+                    </div>
+                    <div class="form-group">
+                        <label for="deptDescription">Tavsif</label>
+                        <textarea id="deptDescription" name="deptDescription" rows="4" placeholder="Bo'lim haqida ma'lumot" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="cancelDeptBtn">Bekor qilish</button>
+                        <button type="submit" class="btn-save">Saqlash</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -773,6 +324,8 @@
                         } else {
                             item.style.display = 'none';
                         }
+                    } else {
+                        item.style.display = '';
                     }
                 });
             } catch (error) {
@@ -783,22 +336,42 @@
         // Load sidebar menu on page load
         window.addEventListener('DOMContentLoaded', updateSidebarMenuByRole);
 
-        // Load departments
+        let departmentsData = [];
+
+        async function loadOrganizationsForSelect() {
+            const sel = document.getElementById('deptOrganization');
+            if (!sel) return;
+            try {
+                const response = await fetch('/api/organizations', { credentials: 'include' });
+                const data = await response.json();
+                if (data.success && data.organizations && data.organizations.length > 0) {
+                    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                    sel.innerHTML = '<option value="">Tashkilotni tanlang</option>' +
+                        data.organizations.map(o => `<option value="${o.id}">${esc(o.name || '-')}</option>`).join('');
+                } else {
+                    sel.innerHTML = '<option value="">Tashkilotni tanlang</option>';
+                }
+            } catch (e) {
+                console.error('Error loading organizations:', e);
+                sel.innerHTML = '<option value="">Tashkilotni tanlang</option>';
+            }
+        }
+
         async function loadDepartments() {
             try {
-                const response = await fetch('/api/departments');
+                const response = await fetch('/api/departments', { credentials: 'include' });
                 const data = await response.json();
-                
                 const tbody = document.getElementById('departmentsTableBody');
                 if (!tbody) return;
 
                 if (data.success && data.departments && data.departments.length > 0) {
+                    departmentsData = data.departments;
                     tbody.innerHTML = data.departments.map((dept, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${dept.name || ''}</td>
-                            <td>${dept.organization_name || ''}</td>
-                            <td>${dept.description || ''}</td>
+                            <td>${(dept.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
+                            <td>${(dept.organization_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
+                            <td>${(dept.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
                             <td style="text-align: center;">
                                 <button class="btn-org-edit" onclick="editDepartment(${dept.id})">✏️ Tahrirlash</button>
                                 <button class="btn-org-delete" onclick="deleteDepartment(${dept.id})">🗑️ O'chirish</button>
@@ -806,6 +379,7 @@
                         </tr>
                     `).join('');
                 } else {
+                    departmentsData = [];
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="5" style="padding: 40px; text-align: center; color: #6b7280;">
@@ -819,6 +393,7 @@
                 }
             } catch (error) {
                 console.error('Error loading departments:', error);
+                departmentsData = [];
                 const tbody = document.getElementById('departmentsTableBody');
                 if (tbody) {
                     tbody.innerHTML = `
@@ -832,38 +407,100 @@
             }
         }
 
-        // Create department button
         const createDeptBtn = document.getElementById('createDeptBtn');
+        const departmentModal = document.getElementById('departmentModal');
+        const departmentForm = document.getElementById('departmentForm');
+        const departmentModalTitle = document.getElementById('departmentModalTitle');
+        const closeDeptModal = document.getElementById('closeDeptModal');
+        const cancelDeptBtn = document.getElementById('cancelDeptBtn');
+
         if (createDeptBtn) {
-            createDeptBtn.addEventListener('click', function() {
-                alert('Bo\'lim qo\'shish funksiyasi ishlab chiqilmoqda...');
+            createDeptBtn.addEventListener('click', async function() {
+                departmentModalTitle.textContent = 'Bo\'lim yaratish';
+                departmentForm.reset();
+                document.getElementById('deptId').value = '';
+                await loadOrganizationsForSelect();
+                if (departmentModal) departmentModal.style.display = 'flex';
             });
         }
 
-        function editDepartment(id) {
-            alert(`Bo'limni tahrirlash (ID: ${id})`);
+        function closeDepartmentModal() {
+            if (departmentModal) departmentModal.style.display = 'none';
         }
 
-        function deleteDepartment(id) {
-            if (confirm('Bo\'limni o\'chirishni tasdiqlaysizmi?')) {
-                fetch(`/api/departments/${id}`, {
-                    method: 'DELETE'
-                })
-                .then(res => res.json())
-                .then(data => {
+        if (closeDeptModal) closeDeptModal.addEventListener('click', closeDepartmentModal);
+        if (cancelDeptBtn) cancelDeptBtn.addEventListener('click', closeDepartmentModal);
+        if (departmentModal) departmentModal.addEventListener('click', function(e) { if (e.target === departmentModal) closeDepartmentModal(); });
+
+        window.editDepartment = async function(id) {
+            const dept = departmentsData.find(d => d.id === id);
+            if (!dept) return;
+            departmentModalTitle.textContent = 'Bo\'limni tahrirlash';
+            document.getElementById('deptId').value = dept.id;
+            document.getElementById('deptName').value = dept.name || '';
+            document.getElementById('deptDescription').value = dept.description || '';
+            await loadOrganizationsForSelect();
+            const orgSel = document.getElementById('deptOrganization');
+            if (orgSel && dept.organization_id) orgSel.value = String(dept.organization_id);
+            if (departmentModal) departmentModal.style.display = 'flex';
+        };
+
+        window.deleteDepartment = async function(id) {
+            const dept = departmentsData.find(d => d.id === id);
+            const name = dept ? (dept.name || 'Bo\'lim') : 'Bo\'lim';
+            if (!confirm(`Haqiqatan ham "${name}" ni o'chirmoqchimisiz?`)) return;
+            try {
+                const response = await fetch(`/api/departments/${id}`, { method: 'DELETE', credentials: 'include' });
+                const data = await response.json();
+                if (data.success) {
+                    loadDepartments();
+                } else {
+                    alert('Xatolik: ' + (data.message || 'O\'chirishda xatolik'));
+                }
+            } catch (e) {
+                alert('Xatolik yuz berdi');
+            }
+        };
+
+        if (departmentForm) {
+            departmentForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const deptId = document.getElementById('deptId').value;
+                const organizationId = document.getElementById('deptOrganization').value;
+                const name = (document.getElementById('deptName').value || '').trim();
+                const description = (document.getElementById('deptDescription').value || '').trim();
+                if (!organizationId) {
+                    alert('Tashkilotni tanlang!');
+                    return;
+                }
+                if (!name) {
+                    alert('Bo\'lim nomini kiriting!');
+                    return;
+                }
+                try {
+                    const url = deptId ? `/api/departments/${deptId}` : '/api/departments';
+                    const method = deptId ? 'PUT' : 'POST';
+                    const response = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ organization_id: parseInt(organizationId, 10), name, description: description || null })
+                    });
+                    const data = await response.json();
                     if (data.success) {
+                        alert(deptId ? 'Bo\'lim muvaffaqiyatli yangilandi!' : 'Bo\'lim muvaffaqiyatli yaratildi!');
+                        closeDepartmentModal();
+                        departmentForm.reset();
                         loadDepartments();
                     } else {
-                        alert('Xatolik: ' + (data.message || 'O\'chirishda xatolik'));
+                        alert('Xatolik: ' + (data.message || 'Saqlab bo\'lmadi'));
                     }
-                })
-                .catch(err => {
+                } catch (err) {
                     alert('Xatolik yuz berdi');
-                });
-            }
+                }
+            });
         }
 
-        // Load departments on page load
         window.addEventListener('DOMContentLoaded', loadDepartments);
 
         // Load notification count

@@ -150,29 +150,33 @@ async function saveAttendance(eventData, arrivalTime, minutesLate, isAbsent = fa
     );
 
     if (existing.rows.length > 0) {
-      // Update existing record
+      const row = existing.rows[0];
       if (isDeparture) {
-        // 18:00 dan keyin kelgan = ketgan, faqat departure_time ni yangilash
-        await pool.query(
-          `UPDATE attendance 
-           SET departure_time = $1,
-               updated_at = CURRENT_TIMESTAMP
-           WHERE user_id = $2 AND date = $3`,
-          [arrivalTime, userId, dateOnly]
-        );
+        // 18:00–23:59: faqat birinchi marta o'tgan = ketgan. departure_time bo'sh bo'lsa yangilash.
+        if (!row.departure_time) {
+          await pool.query(
+            `UPDATE attendance 
+             SET departure_time = $1,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE user_id = $2 AND date = $3`,
+            [arrivalTime, userId, dateOnly]
+          );
+        }
       } else {
-        // 00:00 dan 18:00 gacha kelgan = kelgan, arrival_time va status ni yangilash
-        await pool.query(
-          `UPDATE attendance 
-           SET arrival_time = $1,
-               minutes_late = $2,
-               status = $3,
-               updated_at = CURRENT_TIMESTAMP
-           WHERE user_id = $4 AND date = $5`,
-          [arrivalTime, minutesLate, status, userId, dateOnly]
-        );
+        // 00:00–18:00: nechi marta o'tishidan qat'iy nazar birinchi ro'yxatdan o'tgan = kelish. arrival_time bo'sh bo'lsa yangilash.
+        if (!row.arrival_time) {
+          await pool.query(
+            `UPDATE attendance 
+             SET arrival_time = $1,
+                 minutes_late = $2,
+                 status = $3,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE user_id = $4 AND date = $5`,
+            [arrivalTime, minutesLate, status, userId, dateOnly]
+          );
+        }
       }
-      return existing.rows[0].id;
+      return row.id;
     } else {
       // Create new attendance record
       if (isDeparture) {

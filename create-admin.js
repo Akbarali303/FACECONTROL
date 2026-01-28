@@ -11,25 +11,27 @@ async function createAdmin() {
     console.log('[Admin] Initializing database tables...');
     await initDatabase();
     
-    // Check if admin exists
-    const checkAdmin = await pool.query('SELECT id, username FROM users WHERE username = $1', ['admin']);
-    
-    if (checkAdmin.rows.length > 0) {
-      console.log('[Admin] ✅ Admin user already exists');
-      console.log('[Admin] Username: admin');
-      console.log('[Admin] Password: admin123');
-    } else {
-      // Create admin user
-      const adminPassword = await bcrypt.hash('admin123', 10);
-      await pool.query(
-        'INSERT INTO users (username, password, full_name, role) VALUES ($1, $2, $3, $4)',
-        ['admin', adminPassword, 'Administrator', 'admin']
-      );
-      console.log('[Admin] ✅ Admin user created successfully');
-      console.log('[Admin] Username: admin');
-      console.log('[Admin] Password: admin123');
+    const users = [
+      { username: 'superadmin', password: 'superadmin123', fullName: 'Super Administrator', role: 'superadmin' },
+      { username: 'admin', password: 'admin123', fullName: 'Administrator', role: 'admin' }
+    ];
+
+    for (const u of users) {
+      const exists = await pool.query('SELECT id FROM users WHERE username = $1', [u.username]);
+      if (exists.rows.length > 0) {
+        console.log(`[Admin] ✅ ${u.username} allaqachon mavjud`);
+      } else {
+        const hash = await bcrypt.hash(u.password, 10);
+        await pool.query(
+          'INSERT INTO users (username, password, full_name, role) VALUES ($1, $2, $3, $4)',
+          [u.username, hash, u.fullName, u.role]
+        );
+        console.log(`[Admin] ✅ ${u.username} yaratildi`);
+      }
+      console.log(`[Admin]   Login: ${u.username} | Parol: ${u.password}`);
     }
-    
+
+    console.log('\n[Admin] Super Admin: superadmin / superadmin123');
     process.exit(0);
   } catch (err) {
     console.error('[Admin] ❌ Error:', err.message);
