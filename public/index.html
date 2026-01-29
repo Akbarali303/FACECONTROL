@@ -1891,14 +1891,9 @@
                                     if (emp.department_name) user.department_name = emp.department_name;
                                     if (emp.phone) user.phone = emp.phone;
                                     if (emp.email) user.email = emp.email;
-                                    if (emp.photo_base64) {
-                                        // Check if already has data: prefix
-                                        if (emp.photo_base64.startsWith('data:')) {
-                                            user.imageUrl = emp.photo_base64;
-                                        } else {
-                                            user.imageUrl = `data:image/jpeg;base64,${emp.photo_base64}`;
-                                        }
-                                    } else if (emp.photo_url) {
+                                    if (emp.photo_base64 && String(emp.photo_base64).length > 0) {
+                                        user.imageUrl = emp.photo_base64.startsWith('data:') ? emp.photo_base64 : `data:image/jpeg;base64,${emp.photo_base64}`;
+                                    } else if (emp.photo_url && /^https?:\/\//i.test(emp.photo_url)) {
                                         user.imageUrl = emp.photo_url;
                                     }
                                     users.set(key, user);
@@ -1939,9 +1934,11 @@
                                     if (emp.department_name) user.department_name = emp.department_name;
                                     if (emp.phone) user.phone = emp.phone;
                                     if (emp.email) user.email = emp.email;
-                                    if (emp.photo_base64) {
+                                    if (emp.photo_base64 && String(emp.photo_base64).length > 0) {
                                         user.imageUrl = emp.photo_base64.startsWith('data:') ? emp.photo_base64 : `data:image/jpeg;base64,${emp.photo_base64}`;
-                                    } else if (emp.photo_url) user.imageUrl = emp.photo_url;
+                                    } else if (emp.photo_url && /^https?:\/\//i.test(emp.photo_url)) {
+                                        user.imageUrl = emp.photo_url;
+                                    }
                                     users.set(key, user);
                                 }
                             }
@@ -2078,9 +2075,13 @@
                     minutesLate = 0;
                 }
 
-                // Get image URL from event data
-                const imageUrl = data.FaceImageUrl || data.ImageUrl || data.imageUrl ||
+                // Get image URL from event data (only use if valid)
+                const rawImageUrl = data.FaceImageUrl || data.ImageUrl || data.imageUrl ||
                     data.SnapshotUrl || data.snapshotUrl || null;
+                const imageUrl = (rawImageUrl && typeof rawImageUrl === 'string' && (
+                    /^https?:\/\//i.test(rawImageUrl) ||
+                    /^data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/i.test(rawImageUrl.trim())
+                )) ? rawImageUrl : null;
 
                 let user = users.get(key);
                 if (!user) {
@@ -2095,7 +2096,7 @@
                         userId,
                         name: cardName,
                         position,
-                        imageUrl,
+                        imageUrl: imageUrl || null,
                         organization: null,
                         lastSeenAt: nowIso,
                         lastArrivalTime: hasDeparted ? null : nowIso, // null if departed, otherwise arrival time
@@ -2127,7 +2128,6 @@
                     if (!user.position || user.position === '-') {
                         user.position = position;
                     }
-                    // Only update image if not saved
                     if (!user.imageUrl && imageUrl) {
                         user.imageUrl = imageUrl;
                     }
@@ -2561,7 +2561,7 @@
                     }
 
                     const avatarHtml = user.imageUrl
-                        ? `<img src="${user.imageUrl}" alt="${user.name || ''}">`
+                        ? `<img src="${user.imageUrl}" alt="${(user.name || '').replace(/"/g, '&quot;')}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: #667eea; color: white; font-weight: 600;">${initials}</div>`
                         : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #667eea; color: white; font-weight: 600;">${initials}</div>`;
 
                     const organization = user.organization || 'Lavozim ko\'rsatilmagan';
@@ -4278,9 +4278,12 @@
 
                 // Render all employees (no pagination)
                 list.innerHTML = employees.map(emp => {
-                    const photo = emp.photo_base64 || emp.photo_url
-                        ? `data:image/jpeg;base64,${emp.photo_base64 || ''}`
-                        : '';
+                    let photo = '';
+                    if (emp.photo_base64 && String(emp.photo_base64).length > 0) {
+                        photo = emp.photo_base64.startsWith('data:') ? emp.photo_base64 : `data:image/jpeg;base64,${emp.photo_base64}`;
+                    } else if (emp.photo_url && /^https?:\/\//i.test(emp.photo_url)) {
+                        photo = emp.photo_url;
+                    }
 
                     // Format joining date
                     let joiningDate = '-';
@@ -4580,8 +4583,11 @@
                             // Set photo preview
                             const photoPreview = document.getElementById('currentPhotoPreview');
                             const photoPlaceholder = document.getElementById('photoPlaceholder');
-                            if (emp.photo_base64 || emp.photo_url) {
-                                photoPreview.innerHTML = `<img src="data:image/jpeg;base64,${emp.photo_base64 || ''}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            if (emp.photo_base64 && String(emp.photo_base64).length > 0) {
+                                const src = emp.photo_base64.startsWith('data:') ? emp.photo_base64 : `data:image/jpeg;base64,${emp.photo_base64}`;
+                                photoPreview.innerHTML = `<img src="${src}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">`;
+                            } else if (emp.photo_url && /^https?:\/\//i.test(emp.photo_url)) {
+                                photoPreview.innerHTML = `<img src="${emp.photo_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">`;
                             } else {
                                 photoPreview.innerHTML = '<span id="photoPlaceholder">No photo</span>';
                             }

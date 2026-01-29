@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Dahua event stream uses curl to connect to terminal
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # package files

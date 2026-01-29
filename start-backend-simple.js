@@ -194,26 +194,30 @@ app.post('/api/organizations', requireAuth, requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Tashkilot nomi kiritilishi shart' });
     }
 
-    if (dbAvailable) {
-      try {
-        const { pool } = require('./database');
-        const n = employee_count != null && String(employee_count).trim() !== '' ? parseInt(employee_count, 10) : 0;
-        const count = (typeof n === 'number' && !Number.isNaN(n) && n >= 0) ? n : 0;
-        const result = await pool.query(
-          'INSERT INTO organizations (name, description, phone, email, employee_count) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, description, phone, email, employee_count, created_at, updated_at',
-          [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, count]
-        );
-        return res.json({ success: true, organization: result.rows[0] });
-      } catch (err) {
-        if (err.code === '23505') { // Unique violation
-          return res.status(400).json({ success: false, message: 'Bu nomli tashkilot allaqachon mavjud' });
-        }
-        console.error('[API] Database error creating organization:', err.message);
-        return res.status(500).json({ success: false, message: 'Database error' });
+    if (!dbAvailable) {
+      const ok = await checkDatabase();
+      if (!ok) {
+        return res.status(503).json({ success: false, message: 'Database not available' });
       }
     }
 
-    res.status(503).json({ success: false, message: 'Database not available' });
+    try {
+      const { pool } = require('./database');
+      const n = employee_count != null && String(employee_count).trim() !== '' ? parseInt(employee_count, 10) : 0;
+      const count = (typeof n === 'number' && !Number.isNaN(n) && n >= 0) ? n : 0;
+      const result = await pool.query(
+        'INSERT INTO organizations (name, description, phone, email, employee_count) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, description, phone, email, employee_count, created_at, updated_at',
+        [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, count]
+      );
+      return res.json({ success: true, organization: result.rows[0] });
+    } catch (err) {
+      if (err.code === '23505') {
+        return res.status(400).json({ success: false, message: 'Bu nomli tashkilot allaqachon mavjud' });
+      }
+      console.error('[API] Database error creating organization:', err.message);
+      dbAvailable = false;
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
   } catch (err) {
     console.error('[API] Error creating organization:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -230,31 +234,35 @@ app.put('/api/organizations/:id', requireAuth, requireAdmin, async (req, res) =>
       return res.status(400).json({ success: false, message: 'Tashkilot nomi kiritilishi shart' });
     }
 
-    if (dbAvailable) {
-      try {
-        const { pool } = require('./database');
-        const n = employee_count != null && String(employee_count).trim() !== '' ? parseInt(employee_count, 10) : 0;
-        const count = (typeof n === 'number' && !Number.isNaN(n) && n >= 0) ? n : 0;
-        const result = await pool.query(
-          'UPDATE organizations SET name = $1, description = $2, phone = $3, email = $4, employee_count = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING id, name, description, phone, email, employee_count, created_at, updated_at',
-          [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, count, id]
-        );
-
-        if (result.rows.length === 0) {
-          return res.status(404).json({ success: false, message: 'Tashkilot topilmadi' });
-        }
-
-        return res.json({ success: true, organization: result.rows[0] });
-      } catch (err) {
-        if (err.code === '23505') { // Unique violation
-          return res.status(400).json({ success: false, message: 'Bu nomli tashkilot allaqachon mavjud' });
-        }
-        console.error('[API] Database error updating organization:', err.message);
-        return res.status(500).json({ success: false, message: 'Database error' });
+    if (!dbAvailable) {
+      const ok = await checkDatabase();
+      if (!ok) {
+        return res.status(503).json({ success: false, message: 'Database not available' });
       }
     }
 
-    res.status(503).json({ success: false, message: 'Database not available' });
+    try {
+      const { pool } = require('./database');
+      const n = employee_count != null && String(employee_count).trim() !== '' ? parseInt(employee_count, 10) : 0;
+      const count = (typeof n === 'number' && !Number.isNaN(n) && n >= 0) ? n : 0;
+      const result = await pool.query(
+        'UPDATE organizations SET name = $1, description = $2, phone = $3, email = $4, employee_count = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING id, name, description, phone, email, employee_count, created_at, updated_at',
+        [name.trim(), description ? description.trim() : null, phone ? phone.trim() : null, email ? email.trim() : null, count, id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Tashkilot topilmadi' });
+      }
+
+      return res.json({ success: true, organization: result.rows[0] });
+    } catch (err) {
+      if (err.code === '23505') {
+        return res.status(400).json({ success: false, message: 'Bu nomli tashkilot allaqachon mavjud' });
+      }
+      console.error('[API] Database error updating organization:', err.message);
+      dbAvailable = false;
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
   } catch (err) {
     console.error('[API] Error updating organization:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -266,23 +274,27 @@ app.delete('/api/organizations/:id', requireAuth, requireAdmin, async (req, res)
   try {
     const { id } = req.params;
 
-    if (dbAvailable) {
-      try {
-        const { pool } = require('./database');
-        const result = await pool.query('DELETE FROM organizations WHERE id = $1 RETURNING id', [id]);
-
-        if (result.rows.length === 0) {
-          return res.status(404).json({ success: false, message: 'Tashkilot topilmadi' });
-        }
-
-        return res.json({ success: true, message: 'Tashkilot muvaffaqiyatli o\'chirildi' });
-      } catch (err) {
-        console.error('[API] Database error deleting organization:', err.message);
-        return res.status(500).json({ success: false, message: 'Database error' });
+    if (!dbAvailable) {
+      const ok = await checkDatabase();
+      if (!ok) {
+        return res.status(503).json({ success: false, message: 'Database not available' });
       }
     }
 
-    res.status(503).json({ success: false, message: 'Database not available' });
+    try {
+      const { pool } = require('./database');
+      const result = await pool.query('DELETE FROM organizations WHERE id = $1 RETURNING id', [id]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Tashkilot topilmadi' });
+      }
+
+      return res.json({ success: true, message: 'Tashkilot muvaffaqiyatli o\'chirildi' });
+    } catch (err) {
+      console.error('[API] Database error deleting organization:', err.message);
+      dbAvailable = false;
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
   } catch (err) {
     console.error('[API] Error deleting organization:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -1280,10 +1292,16 @@ app.get('/api/attendance', requireAuth, async (req, res) => {
     const date = req.query.date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const limit = Math.min(parseInt(req.query.limit || '1000', 10), 5000);
 
-    if (dbAvailable) {
-      try {
-        const { pool } = require('./database');
-        const result = await pool.query(`
+    if (!dbAvailable) {
+      const ok = await checkDatabase();
+      if (!ok) {
+        return res.status(503).json({ success: false, message: 'Database not available' });
+      }
+    }
+
+    try {
+      const { pool } = require('./database');
+      const result = await pool.query(`
           SELECT 
             a.id,
             a.user_id,
@@ -1312,19 +1330,17 @@ app.get('/api/attendance', requireAuth, async (req, res) => {
           LIMIT $2
         `, [date, limit]);
 
-        return res.json({
-          success: true,
-          count: result.rows.length,
-          date: date,
-          records: result.rows
-        });
-      } catch (err) {
-        console.error('[API] Database error getting attendance:', err.message);
-        return res.status(500).json({ success: false, message: 'Database error' });
-      }
+      return res.json({
+        success: true,
+        count: result.rows.length,
+        date: date,
+        records: result.rows
+      });
+    } catch (err) {
+      console.error('[API] Database error getting attendance:', err.message);
+      dbAvailable = false;
+      return res.status(500).json({ success: false, message: 'Database error' });
     }
-
-    res.status(503).json({ success: false, message: 'Database not available' });
   } catch (err) {
     console.error('[API] Error getting attendance:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -1659,6 +1675,11 @@ async function checkDatabase() {
 checkDatabase().catch(() => {
   dbAvailable = false;
 });
+
+// Periodic DB recheck (har 60 soniyada) — DB qaytasa dbAvailable true bo‘ladi
+setInterval(() => {
+  checkDatabase().catch(() => {});
+}, 60000);
 
 // Add event to ring buffer, database, and broadcast to SSE clients
 async function addEvent(event) {
@@ -2178,6 +2199,9 @@ function startDahuaStream() {
 
   curlProcess.on('error', (error) => {
     console.error(`[Dahua] Process error: ${error.message}`);
+    if (error.code === 'ENOENT') {
+      console.error('[Dahua] curl not found. Add "RUN apk add --no-cache curl" to Dockerfile, then rebuild.');
+    }
     scheduleReconnect();
   });
 
