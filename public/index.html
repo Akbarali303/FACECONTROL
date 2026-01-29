@@ -336,6 +336,10 @@
                     <button class="export-btn" id="exportBtn" title="Export to Excel">
                         <span>📥</span> Excel'ga eksport qilish
                     </button>
+                    <!-- Demo +++++ — serverda test qilish uchun; keyin o'chirib tashlash -->
+                    <button type="button" class="demo-test-btn export-btn" id="demoTestBtn" title="Demo xodimlar yaratish (test)">
+                        <span>➕</span> Demo +++++
+                    </button>
                     <div class="search-container" style="width: 180px;">
                         <input type="text" class="search-input" id="searchInput" placeholder="Qidirish..."
                             autocomplete="off">
@@ -1987,28 +1991,60 @@
                                         lastArrivalTime: arr ? (typeof arr === 'string' ? arr : new Date(arr).toISOString()) : null,
                                         lastDepartureTime: dep ? (typeof dep === 'string' ? dep : new Date(dep).toISOString()) : null,
                                         minutesLateToday: record.minutes_late != null ? record.minutes_late : 0,
-                                        isAbsent: st === 'absent'
+                                        isAbsent: st === 'absent',
+                                        full_name: record.full_name,
+                                        card_name: record.card_name,
+                                        position: record.position,
+                                        organization: record.organization
                                     });
                                 }
                             });
 
-                            for (const [key, user] of users.entries()) {
-                                const attendance = attendanceMap.get(user.userId);
-                                if (attendance) {
-                                    user.attendanceId = attendance.attendanceId;
-                                    user.isExcused = attendance.isExcused;
-                                    user.excuseType = attendance.excuseType;
-                                    if (attendance.lastArrivalTime) user.lastArrivalTime = attendance.lastArrivalTime;
-                                    if (attendance.lastDepartureTime) {
-                                        user.lastDepartureTime = attendance.lastDepartureTime;
+                            for (const record of result.records) {
+                                if (!record.user_id) continue;
+                                const key = 'id:' + record.user_id;
+                                const att = attendanceMap.get(record.user_id);
+                                if (!att) continue;
+                                let user = users.get(key);
+                                if (!user) {
+                                    user = {
+                                        key: key,
+                                        userId: record.user_id,
+                                        name: record.full_name || record.card_name || 'Nomalum',
+                                        position: record.position || '-',
+                                        organization: record.organization || null,
+                                        department_name: null,
+                                        phone: '-',
+                                        email: '-',
+                                        imageUrl: null,
+                                        lastSeenAt: null,
+                                        lastArrivalTime: att.lastArrivalTime,
+                                        lastDepartureTime: att.lastDepartureTime || null,
+                                        hasDeparted: !!att.lastDepartureTime,
+                                        minutesLateToday: att.minutesLateToday != null ? att.minutesLateToday : 0,
+                                        isAbsent: !!att.isAbsent,
+                                        attendanceId: att.attendanceId,
+                                        isExcused: att.isExcused,
+                                        excuseType: att.excuseType,
+                                        onTimeCount: 0,
+                                        lateCount: 0,
+                                        totalVisits: 1
+                                    };
+                                    users.set(key, user);
+                                } else {
+                                    user.attendanceId = att.attendanceId;
+                                    user.isExcused = att.isExcused;
+                                    user.excuseType = att.excuseType;
+                                    if (att.lastArrivalTime) user.lastArrivalTime = att.lastArrivalTime;
+                                    if (att.lastDepartureTime) {
+                                        user.lastDepartureTime = att.lastDepartureTime;
                                         user.hasDeparted = true;
                                     }
-                                    if (attendance.minutesLateToday != null) user.minutesLateToday = attendance.minutesLateToday;
-                                    if (attendance.isAbsent != null) user.isAbsent = attendance.isAbsent;
+                                    if (att.minutesLateToday != null) user.minutesLateToday = att.minutesLateToday;
+                                    if (att.isAbsent != null) user.isAbsent = att.isAbsent;
                                     users.set(key, user);
                                 }
                             }
-                            // Re-render table after updating attendance data
                             renderEmployeesTable();
                         }
                     }
@@ -3293,6 +3329,35 @@
                 const exportBtn = document.getElementById('exportBtn');
                 if (exportBtn) {
                     exportBtn.addEventListener('click', exportToExcel);
+                }
+
+                const demoTestBtn = document.getElementById('demoTestBtn');
+                if (demoTestBtn) {
+                    demoTestBtn.addEventListener('click', async function () {
+                        const btn = this;
+                        const origText = btn.innerHTML;
+                        btn.disabled = true;
+                        btn.innerHTML = '<span>⏳</span> Yuklanmoqda...';
+                        try {
+                            const res = await fetch('/api/employees/demo', { method: 'POST', credentials: 'include' });
+                            const data = await res.json();
+                            if (data.success) {
+                                if (typeof loadTodayAttendance === 'function') await loadTodayAttendance();
+                                if (typeof loadAllEmployees === 'function') await loadAllEmployees();
+                                if (typeof renderEmployeesTable === 'function') renderEmployeesTable();
+                                const allUsers = Array.from(typeof users !== 'undefined' ? users.values() : []);
+                                if (typeof updateStatusCards === 'function') updateStatusCards(allUsers);
+                                alert('Demo xodimlar yaratildi: ' + (data.created || 0) + ' ta.');
+                            } else {
+                                alert('Xatolik: ' + (data.message || 'Demo yaratilmadi'));
+                            }
+                        } catch (e) {
+                            alert('Xatolik: ' + (e.message || 'Server bilan aloqa xato'));
+                        } finally {
+                            btn.disabled = false;
+                            btn.innerHTML = origText;
+                        }
+                    });
                 }
             });
 
