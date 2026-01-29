@@ -2826,13 +2826,13 @@
                 ws['!cols'] = colWidths;
 
                 // Add worksheet to workbook
-                XLSX.utils.book_append_sheet(wb, ws, 'Employees');
+                XLSX.utils.book_append_sheet(wb, ws, "O'rmon agentligi KPI");
 
                 // Generate filename with date
                 const now = new Date();
                 const dateStr = now.toISOString().split('T')[0];
                 const periodStr = currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1);
-                const filename = `employees_${periodStr}_${dateStr}.xlsx`;
+                const filename = `O'rmon agentligi KPI_${periodStr}_${dateStr}.xlsx`;
 
                 // Write file and download
                 XLSX.writeFile(wb, filename);
