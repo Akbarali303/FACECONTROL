@@ -2064,13 +2064,21 @@ function startDahuaStream() {
   ];
 
   console.log(`[Dahua] Connecting to ${DAHUA_IP}...`);
-  curlProcess = spawn('curl', args, {
-    shell: false,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    windowsHide: true,
-    // Force unbuffered output
-    env: { ...process.env, PYTHONUNBUFFERED: '1' }
-  });
+  try {
+    curlProcess = spawn('curl', args, {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      env: { ...process.env, PYTHONUNBUFFERED: '1' }
+    });
+  } catch (spawnErr) {
+    console.error('[Dahua] Spawn failed:', spawnErr.message);
+    if (spawnErr.code === 'ENOENT') {
+      console.error('[Dahua] curl not found. Add "RUN apk add --no-cache curl" to Dockerfile, then rebuild.');
+    }
+    scheduleReconnect();
+    return;
+  }
 
   // Set stdout to unbuffered mode
   if (curlProcess.stdout && curlProcess.stdout.setEncoding) {
@@ -2309,8 +2317,11 @@ async function startServer() {
       console.log(`[Server] Events API: http://localhost:${PORT}/api/events (protected)`);
       console.log(`[Server] Realtime SSE: http://localhost:${PORT}/api/realtime (protected)`);
 
-      // Start Dahua stream connection
-      startDahuaStream();
+      try {
+        startDahuaStream();
+      } catch (e) {
+        console.error('[Dahua] Start failed:', e.message);
+      }
     });
     
     // Store server reference for graceful shutdown

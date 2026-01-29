@@ -1428,17 +1428,6 @@ tr:last-child td {
     border-color: #9ca3af;
 }
 
-/* Demo +++++ — test uchun; keyin o'chirib tashlash */
-.demo-test-btn {
-    border-color: #f59e0b;
-    background: #fffbeb;
-    color: #b45309;
-}
-.demo-test-btn:hover {
-    background: #fef3c7;
-    border-color: #f59e0b;
-}
-
 .filter-select {
     padding: 8px 32px 8px 12px;
     min-height: 40px;
