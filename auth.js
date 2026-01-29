@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 let dbAvailable = true;
 
 // Fallback users (if database is not available)

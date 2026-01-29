@@ -944,9 +944,7 @@ app.post('/api/employees', requireAuth, requireAdmin, async (req, res) => {
         // Insert new employee
         const now = new Date();
         const result = await pool.query(
-          `INSERT INTO employees (user_id, card_name, full_name, position, organization, photo_base64, first_seen_at, last_seen_at, total_visits)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $7, 0)
-           RETURNING id, user_id, card_name, full_name, position, organization, photo_base64`,
+          `INSERT INTO employees (user_id, card_name, full_name, position, organization, photo_base64, first_seen_at, last_seen_at, total_visits) VALUES ($1, $2, $3, $4, $5, $6, $7, $7, 0) RETURNING id, user_id, card_name, full_name, position, organization, photo_base64`,
           [tempUserId, card_name || null, full_name, position || null, organization || null, photo_base64 || null, now]
         );
 
