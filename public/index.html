@@ -125,7 +125,7 @@
                     style="color: #ffffff; text-decoration: none; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center;">+998
                     91 585-55-33</a>
             </div>
-            <p class="sidebar-footer-text" style="margin: 0; line-height: 1.5;">FORESTDIGITAL © 2026.<br>Designed & Developed By Jaxongir</p>
+            <p class="sidebar-footer-text" style="margin: 0; line-height: 1.5;">FORESTDIGITAL © 2026.<br>Designed & Developed By Akbarali</p>
         </div>
     </div>
 
@@ -142,9 +142,9 @@
                     <p id="pageBreadcrumb">Admin / Asosiy Dashboard</p>
                 </div>
                 <div class="header-right">
-                    <div class="email-icon-container" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                    <div class="email-icon-container chat-trigger" id="chatTriggerBtn" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
                         onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
-                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';" title="Chat (ChatGPT)">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                             style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -317,7 +317,7 @@
 
             <div class="employees-header">
                 <div class="employees-title">Markaziy aparat</div>
-                <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                     <div class="time-filter">
                         <select class="filter-select" id="periodSelect">
                             <option value="daily" selected>Kunlik</option>
@@ -365,7 +365,7 @@
                     </thead>
                     <tbody id="employeesBody">
                         <tr>
-                            <td colspan="11" class="empty-row">AccessControl hodisalarini kutish...</td>
+                            <td colspan="13" class="empty-row">AccessControl hodisalarini kutish...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -385,9 +385,9 @@
                         </p>
                     </div>
                     <div class="header-right">
-                        <div class="email-icon-container" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                        <div class="email-icon-container chat-trigger" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
                             onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
-                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';" title="Chat (ChatGPT)">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                                 style="width: 20px; height: 20px; fill: none; stroke: #6b7280; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -1266,6 +1266,26 @@
             </div>
         </div>
 
+        <!-- Chat modal (xabarnoma icon -> ChatGPT) -->
+        <div id="chatModal" class="modal chat-modal" style="display: none;">
+            <div class="chat-modal-content">
+                <div class="chat-modal-header">
+                    <div class="chat-modal-title">
+                        <span style="font-size: 1.1rem; font-weight: 700; color: #111827;">Chat</span>
+                        <span style="font-size: 0.8rem; color: #6b7280; font-weight: 400;"> — ChatGPT bilan suhbat</span>
+                    </div>
+                    <button type="button" class="chat-modal-close" id="closeChatModal" aria-label="Yopish">&times;</button>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-wrap">
+                    <textarea id="chatInput" class="chat-input" placeholder="Xabar yozing..." rows="1"></textarea>
+                    <button type="button" class="chat-send-btn" id="chatSendBtn" aria-label="Yuborish">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Edit Employee Modal -->
         <div id="editEmployeeModal" class="modal" style="display: none;">
             <div class="modal-content">
@@ -1487,7 +1507,105 @@
 
             const users = new Map(); // key: userId or CardName, value: stats
             let totalEmployeesCount = 0; // jami xodimlar soni (bazadan)
+            let dataLoaded = false; // barcha manbalar yuklanganmi (events, attendance, employees)
             let currentPeriod = 'daily'; // daily, weekly, yearly
+            let persistDebounceTimer = null;
+            const CACHE_KEY_PREFIX = 'facecontrol_dashboard_';
+
+            function getTodayStr() {
+                return new Date().toISOString().split('T')[0];
+            }
+
+            function persistUsersToStorage() {
+                try {
+                    const today = getTodayStr();
+                    const list = [];
+                    for (const [k, u] of users.entries()) {
+                        list.push({
+                            key: k,
+                            userId: u.userId,
+                            name: u.name,
+                            position: u.position,
+                            organization: u.organization,
+                            department_name: u.department_name,
+                            phone: u.phone,
+                            email: u.email,
+                            lastSeenAt: u.lastSeenAt,
+                            lastArrivalTime: u.lastArrivalTime,
+                            lastDepartureTime: u.lastDepartureTime,
+                            hasDeparted: !!u.hasDeparted,
+                            minutesLateToday: u.minutesLateToday || 0,
+                            isAbsent: !!u.isAbsent,
+                            attendanceId: u.attendanceId || null,
+                            isExcused: !!u.isExcused,
+                            excuseType: u.excuseType || null,
+                            onTimeCount: u.onTimeCount || 0,
+                            lateCount: u.lateCount || 0,
+                            totalVisits: u.totalVisits || 0
+                        });
+                    }
+                    const payload = {
+                        date: today,
+                        totalEmployeesCount,
+                        dataLoaded: true,
+                        users: list
+                    };
+                    localStorage.setItem(CACHE_KEY_PREFIX + today, JSON.stringify(payload));
+                } catch (e) {
+                    console.warn('[Cache] persist xato:', e);
+                }
+            }
+
+            function restoreUsersFromStorage() {
+                try {
+                    const today = getTodayStr();
+                    const raw = localStorage.getItem(CACHE_KEY_PREFIX + today);
+                    if (!raw) return false;
+                    const data = JSON.parse(raw);
+                    if (!data || data.date !== today) return false;
+                    users.clear();
+                    (data.users || []).forEach(u => {
+                        const rec = {
+                            key: u.key,
+                            userId: u.userId,
+                            name: u.name,
+                            position: u.position,
+                            organization: u.organization,
+                            department_name: u.department_name,
+                            phone: u.phone,
+                            email: u.email,
+                            imageUrl: null,
+                            lastSeenAt: u.lastSeenAt,
+                            lastArrivalTime: u.lastArrivalTime,
+                            lastDepartureTime: u.lastDepartureTime,
+                            hasDeparted: !!u.hasDeparted,
+                            minutesLateToday: u.minutesLateToday || 0,
+                            isAbsent: !!u.isAbsent,
+                            attendanceId: u.attendanceId || null,
+                            isExcused: !!u.isExcused,
+                            excuseType: u.excuseType || null,
+                            onTimeCount: u.onTimeCount || 0,
+                            lateCount: u.lateCount || 0,
+                            totalVisits: u.totalVisits || 0
+                        };
+                        users.set(u.key, rec);
+                    });
+                    totalEmployeesCount = data.totalEmployeesCount || 0;
+                    dataLoaded = !!data.dataLoaded;
+                    return true;
+                } catch (e) {
+                    console.warn('[Cache] restore xato:', e);
+                    return false;
+                }
+            }
+
+            function schedulePersist() {
+                if (persistDebounceTimer) clearTimeout(persistDebounceTimer);
+                persistDebounceTimer = setTimeout(function () {
+                    persistDebounceTimer = null;
+                    persistUsersToStorage();
+                }, 1500);
+            }
             let searchQuery = ''; // search filter
             let statusFilter = 'all'; // all, ontime, late, absent
             let statisticsPeriod = 'daily'; // daily, weekly, monthly, yearly
@@ -1911,7 +2029,7 @@
                 }
             }
 
-            // Load all employees data on page load
+            // Load all employees data on page load (merge into existing users)
             async function loadAllEmployees() {
                 try {
                     const response = await fetch('/api/employees', {
@@ -1949,6 +2067,7 @@
                         const allUsers = Array.from(users.values());
                         updateStatusCards(allUsers);
                     } else {
+                        console.warn('[Employees] API error:', response.status, response.statusText);
                         renderEmployeesTable();
                         updateStatusCards(Array.from(users.values()));
                     }
@@ -1959,6 +2078,57 @@
                 }
             }
 
+            // Events/attendance bo'sh bo'lsa, xodimlar ro'yxatidan userlar yaratib jadvalda ko'rsatish
+            async function loadUsersFromEmployeesFallback() {
+                if (users.size > 0) return;
+                try {
+                    const response = await fetch('/api/employees', { credentials: 'include' });
+                    if (!response.ok) return;
+                    const result = await response.json();
+                    if (!result.success || !Array.isArray(result.employees) || result.employees.length === 0) return;
+                    for (const emp of result.employees) {
+                        const uid = emp.user_id;
+                        if (!uid) continue;
+                        const key = 'id:' + uid;
+                        if (users.has(key)) continue;
+                        let img = null;
+                        if (emp.photo_base64 && String(emp.photo_base64).length > 0) {
+                            img = emp.photo_base64.startsWith('data:') ? emp.photo_base64 : `data:image/jpeg;base64,${emp.photo_base64}`;
+                        } else if (emp.photo_url && /^https?:\/\//i.test(emp.photo_url)) {
+                            img = emp.photo_url;
+                        }
+                        const user = {
+                            key,
+                            userId: uid,
+                            name: emp.full_name || emp.card_name || 'Nomalum',
+                            position: emp.position || '-',
+                            organization: emp.organization || null,
+                            department_name: emp.department_name || null,
+                            phone: emp.phone || '-',
+                            email: emp.email || '-',
+                            imageUrl: img,
+                            lastSeenAt: null,
+                            lastArrivalTime: null,
+                            lastDepartureTime: null,
+                            hasDeparted: false,
+                            minutesLateToday: 0,
+                            isAbsent: true,
+                            attendanceId: null,
+                            isExcused: false,
+                            excuseType: null,
+                            onTimeCount: 0,
+                            lateCount: 0,
+                            totalVisits: 0
+                        };
+                        users.set(key, user);
+                    }
+                    renderEmployeesTable();
+                    updateStatusCards(Array.from(users.values()));
+                } catch (e) {
+                    console.error('[Fallback] Error loading users from employees:', e);
+                }
+            }
+
             // Load today's attendance records to get is_excused status
             async function loadTodayAttendance() {
                 try {
@@ -1966,6 +2136,9 @@
                     const response = await fetch(`/api/attendance?date=${today}`, {
                         credentials: 'include'
                     });
+                    if (!response.ok) {
+                        console.warn('[Attendance] API error:', response.status, response.statusText);
+                    }
                     if (response.ok) {
                         const result = await response.json();
                         if (result.success && result.records && result.records.length > 0) {
@@ -2045,7 +2218,7 @@
                         }
                     }
                 } catch (err) {
-                    // Silently ignore errors
+                    console.warn('[Attendance] Error:', err);
                 }
             }
 
@@ -2201,65 +2374,58 @@
                 updateStatusCards(allUsers);
                 renderDepartmentChart();
                 renderActiveEmployeeCard('activeEmployeesList', allUsers);
+                schedulePersist();
             }
 
             function renderEmployeesTable() {
                 if (!employeesBody) return;
 
-                let allUsers = Array.from(users.values());
-
-                // Filter by period
+                let allUsers;
+                allUsers = Array.from(users.values());
                 allUsers = filterUsersByPeriod(allUsers, currentPeriod);
-
-                // Filter by status (ontime, late, absent)
                 if (statusFilter !== 'all') {
                     allUsers = allUsers.filter(user => {
-                        if (statusFilter === 'ontime') {
-                            return !user.isAbsent && user.minutesLateToday === 0;
-                        } else if (statusFilter === 'late') {
-                            return !user.isAbsent && user.minutesLateToday > 0;
-                        } else if (statusFilter === 'absent') {
-                            return user.isAbsent === true;
-                        }
+                        if (statusFilter === 'ontime') return !user.isAbsent && user.minutesLateToday === 0;
+                        if (statusFilter === 'late') return !user.isAbsent && user.minutesLateToday > 0;
+                        if (statusFilter === 'absent') return user.isAbsent === true;
                         return true;
                     });
                 }
-
-                // Filter by search query
                 if (searchQuery.trim()) {
-                    const query = searchQuery.trim().toLowerCase();
-                    allUsers = allUsers.filter(user => {
-                        const userId = (user.userId || '').toLowerCase();
-                        const name = (user.name || '').toLowerCase();
-                        const position = (user.position || '').toLowerCase();
-                        return userId.includes(query) || name.includes(query) || position.includes(query);
-                    });
+                    const q = searchQuery.trim().toLowerCase();
+                    allUsers = allUsers.filter(user =>
+                        (user.userId || '').toLowerCase().includes(q) ||
+                        (user.name || '').toLowerCase().includes(q) ||
+                        (user.position || '').toLowerCase().includes(q)
+                    );
                 }
-
-                // Sort: absent first, then late users, then by lastSeenAt desc
                 allUsers.sort((a, b) => {
                     const aAbsent = a.isAbsent === true;
                     const bAbsent = b.isAbsent === true;
                     if (aAbsent && !bAbsent) return -1;
                     if (!aAbsent && bAbsent) return 1;
-
                     const aLate = !aAbsent && a.minutesLateToday > 0;
                     const bLate = !bAbsent && b.minutesLateToday > 0;
                     if (aLate && !bLate) return -1;
                     if (!aLate && bLate) return 1;
-                    if (aLate && bLate) {
-                        return (b.minutesLateToday || 0) - (a.minutesLateToday || 0);
-                    }
-                    return new Date(b.lastSeenAt) - new Date(a.lastSeenAt);
+                    if (aLate && bLate) return (b.minutesLateToday || 0) - (a.minutesLateToday || 0);
+                    const tA = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+                    const tB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+                    return tB - tA;
                 });
 
                 employeesBody.innerHTML = '';
 
                 if (allUsers.length === 0) {
                     const row = document.createElement('tr');
-                    const message = searchQuery.trim()
-                        ? 'Qidiruv bo\'yicha xodimlar topilmadi.'
-                        : 'AccessControl hodisalarini kutish...';
+                    let message;
+                    if (searchQuery.trim()) {
+                        message = 'Qidiruv bo\'yicha xodimlar topilmadi.';
+                    } else if (dataLoaded) {
+                        message = 'Bugun ma\'lumot yo\'q. Xodimlar yoki davomat qo\'shing.';
+                    } else {
+                        message = 'AccessControl hodisalarini kutish...';
+                    }
                     row.innerHTML = `<td colspan="13" class="empty-row">${message}</td>`;
                     employeesBody.appendChild(row);
                 } else {
@@ -2292,11 +2458,10 @@
                             .substring(0, 2)
                             .toUpperCase() || 'U';
 
-                        // Use lastArrivalTime if available, otherwise use lastSeenAt for display
                         const timeToDisplay = user.lastArrivalTime || user.lastSeenAt;
-
-                        const arrivalDate = timeToDisplay
-                            ? new Date(timeToDisplay).toLocaleDateString('en-US', {
+                        const dateForCell = timeToDisplay ? new Date(timeToDisplay).toISOString().split('T')[0] : null;
+                        const arrivalDate = dateForCell
+                            ? new Date(dateForCell + 'T12:00:00').toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit'
@@ -2467,6 +2632,8 @@
                                                 user.isExcused = value === 'excused' || value === 'on_duty';
                                                 user.attendanceId = attendanceId;
                                                 renderEmployeesTable();
+                                                updateStatusCards(Array.from(users.values()));
+                                                persistUsersToStorage();
                                             }
                                         } else {
                                             alert('Xatolik: ' + (data.message || 'Status yangilashda xatolik'));
@@ -2765,17 +2932,15 @@
             function exportToExcel() {
                 let allUsers = Array.from(users.values());
                 allUsers = filterUsersByPeriod(allUsers, currentPeriod);
-
-                // Sort same as table
                 allUsers.sort((a, b) => {
                     const aLate = a.minutesLateToday > 0;
                     const bLate = b.minutesLateToday > 0;
                     if (aLate && !bLate) return -1;
                     if (!aLate && bLate) return 1;
-                    if (aLate && bLate) {
-                        return (b.minutesLateToday || 0) - (a.minutesLateToday || 0);
-                    }
-                    return new Date(b.lastSeenAt) - new Date(a.lastSeenAt);
+                    if (aLate && bLate) return (b.minutesLateToday || 0) - (a.minutesLateToday || 0);
+                    const tA = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+                    const tB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+                    return tB - tA;
                 });
 
                 // Prepare CSV data
@@ -2783,11 +2948,10 @@
                 const rows = [headers];
 
                 for (const user of allUsers) {
-                    // Use lastArrivalTime if available, otherwise use lastSeenAt for display
                     const timeToDisplay = user.lastArrivalTime || user.lastSeenAt;
-
-                    const arrivalDate = timeToDisplay
-                        ? new Date(timeToDisplay).toLocaleDateString('en-US', {
+                    const dateForCell = timeToDisplay ? new Date(timeToDisplay).toISOString().split('T')[0] : null;
+                    const arrivalDate = dateForCell
+                        ? new Date(dateForCell + 'T12:00:00').toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit'
@@ -2860,7 +3024,6 @@
                 // Add worksheet to workbook
                 XLSX.utils.book_append_sheet(wb, ws, "O'rmon agentligi KPI");
 
-                // Generate filename with date
                 const now = new Date();
                 const dateStr = now.toISOString().split('T')[0];
                 const periodStr = currentPeriod.charAt(0).toUpperCase() + currentPeriod.slice(1);
@@ -2876,13 +3039,15 @@
             // Load history events from DB
             async function loadHistoryEvents() {
                 try {
-                    const res = await fetch('/api/public/events');
+                    const res = await fetch('/api/public/events', { credentials: 'include' });
+                    if (!res.ok) {
+                        console.warn('[History] Events API error:', res.status, res.statusText);
+                        return;
+                    }
                     const data = await res.json();
-
                     if (!data || !data.success) return;
 
                     const rows = Array.isArray(data.rows) ? data.rows.slice().reverse() : [];
-
                     rows.forEach(ev => {
                         const eventObj = {
                             id: ev.id,
@@ -2891,7 +3056,6 @@
                             data: ev.event_data,
                             receivedAt: ev.received_at
                         };
-
                         updateCurrentSummary(eventObj);
                         updateUsersFromEvent(eventObj);
                     });
@@ -3296,7 +3460,6 @@
                     });
                 }
 
-
                 // View all buttons
                 window.viewAllStatistics = function () {
                     // Scroll to employees table
@@ -3326,20 +3489,140 @@
                 if (exportBtn) {
                     exportBtn.addEventListener('click', exportToExcel);
                 }
+
+                // Chat (xabarnoma icon -> ChatGPT)
+                const chatModal = document.getElementById('chatModal');
+                const chatMessagesEl = document.getElementById('chatMessages');
+                const chatInput = document.getElementById('chatInput');
+                const chatSendBtn = document.getElementById('chatSendBtn');
+                const closeChatModal = document.getElementById('closeChatModal');
+                let chatMessages = [];
+
+                function renderChatMessages() {
+                    if (!chatMessagesEl) return;
+                    chatMessagesEl.innerHTML = '';
+                    if (chatMessages.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'chat-msg assistant';
+                        empty.textContent = 'Salom! ChatGPT bilan yozishingiz mumkin. Savol bering.';
+                        empty.style.alignSelf = 'center';
+                        empty.style.color = '#6b7280';
+                        chatMessagesEl.appendChild(empty);
+                        return;
+                    }
+                    chatMessages.forEach(m => {
+                        const div = document.createElement('div');
+                        div.className = 'chat-msg ' + (m.role === 'user' ? 'user' : (m.error ? 'error' : 'assistant'));
+                        div.textContent = m.content || (m.error || '');
+                        chatMessagesEl.appendChild(div);
+                    });
+                    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+                }
+
+                function openChatModal() {
+                    if (chatModal) {
+                        chatModal.style.display = 'flex';
+                        renderChatMessages();
+                        if (chatInput) chatInput.focus();
+                    }
+                }
+
+                function closeChatModalFn() {
+                    if (chatModal) chatModal.style.display = 'none';
+                }
+
+                async function sendChat() {
+                    const text = (chatInput && chatInput.value) ? chatInput.value.trim() : '';
+                    if (!text) return;
+                    const userMsg = { role: 'user', content: text };
+                    chatMessages.push(userMsg);
+                    if (chatInput) chatInput.value = '';
+                    renderChatMessages();
+                    if (chatSendBtn) chatSendBtn.disabled = true;
+
+                    let errMsg = null;
+                    try {
+                        const msgs = chatMessages.filter(m => m.role && m.content && !m.error).map(m => ({ role: m.role, content: m.content }));
+                        const res = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ messages: msgs })
+                        });
+                        let data = null;
+                        try {
+                            data = await res.json();
+                        } catch (_) {
+                            errMsg = res.ok ? 'Javob o\'qishda xatolik.' : (res.statusText || 'Server xatosi (' + res.status + ').');
+                        }
+                        if (data) {
+                            if (data.success && data.message) {
+                                chatMessages.push({ role: 'assistant', content: data.message });
+                            } else {
+                                chatMessages.push({ role: 'assistant', error: true, content: data.message || 'Xatolik yuz berdi.' });
+                            }
+                        } else if (errMsg) {
+                            chatMessages.push({ role: 'assistant', error: true, content: errMsg });
+                        }
+                    } catch (e) {
+                        errMsg = (e && e.message) ? e.message : 'Tarmoq xatosi. Qayta urinib ko\'ring.';
+                        if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('Load failed')) {
+                            errMsg = 'Tarmoq xatosi. Serverga ulanishni tekshiring.';
+                        }
+                        chatMessages.push({ role: 'assistant', error: true, content: errMsg });
+                    }
+                    renderChatMessages();
+                    if (chatSendBtn) chatSendBtn.disabled = false;
+                }
+
+                document.querySelectorAll('.chat-trigger').forEach(el => {
+                    el.addEventListener('click', openChatModal);
+                });
+                if (closeChatModal) closeChatModal.addEventListener('click', closeChatModalFn);
+                if (chatModal) {
+                    chatModal.addEventListener('click', function (e) {
+                        if (e.target === chatModal) closeChatModalFn();
+                    });
+                }
+                if (chatSendBtn) chatSendBtn.addEventListener('click', sendChat);
+                if (chatInput) {
+                    chatInput.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendChat();
+                        }
+                    });
+                }
             });
 
             // Check auth before connecting
             checkAuth().then(async authenticated => {
                 if (authenticated) {
+                    // Refreshda darhol oxirgi saqlangan ma'lumotlarni ko'rsatish (ochib ketmasin)
+                    if (restoreUsersFromStorage()) {
+                        renderEmployeesTable();
+                        updateStatusCards(Array.from(users.values()));
+                    }
+
                     // Load history events from DB first to restore state
                     await loadHistoryEvents();
 
-                    // Load all employees data and merge
+                    // Load all employees data and merge into existing users
                     await loadAllEmployees();
                     
                     // Load today's attendance records for excuse status
                     await loadTodayAttendance();
                     
+                    // Agar events/attendance bo'sh bo'lsa, xodimlar ro'yxatidan userlar yaratib ko'rsatish
+                    if (users.size === 0) {
+                        await loadUsersFromEmployeesFallback();
+                    }
+                    
+                    dataLoaded = true;
+                    renderEmployeesTable();
+                    updateStatusCards(Array.from(users.values()));
+                    persistUsersToStorage();
+
                     // Load monthly KPIs for active employees
                     await loadMonthlyKPIs();
                     
@@ -3354,9 +3637,16 @@
                 }
             }).catch(err => {
                 console.error('Auth check failed:', err);
-                // Try to connect anyway (fallback)
-                loadAllEmployees().then(() => {
+                dataLoaded = true;
+                if (restoreUsersFromStorage()) {
                     renderEmployeesTable();
+                    updateStatusCards(Array.from(users.values()));
+                }
+                loadAllEmployees().then(async () => {
+                    if (users.size === 0) await loadUsersFromEmployeesFallback();
+                    renderEmployeesTable();
+                    updateStatusCards(Array.from(users.values()));
+                    persistUsersToStorage();
                 });
                 connect();
             });

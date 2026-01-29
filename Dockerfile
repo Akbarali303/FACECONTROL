@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
-# Dahua event stream uses curl to connect to terminal
-RUN apk add --no-cache curl
+# Dahua event stream uses curl; backup uses pg_dump
+RUN apk add --no-cache curl postgresql-client
 
 WORKDIR /app
 

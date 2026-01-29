@@ -7,8 +7,14 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - BACKUP_DIR=/app/backups
     ports:
       - "3001:3001"
+    volumes:
+      - backups_data:/app/backups
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,3 +39,4 @@ services:
 
 volumes:
   postgres_data:
+  backups_data:

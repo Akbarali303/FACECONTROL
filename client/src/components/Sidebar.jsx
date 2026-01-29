@@ -50,7 +50,7 @@ export default function Sidebar() {
         <p className="sidebar-copyright">
           FORESTDIGITAL © 2026.
           <br />
-          Designed & Developed By Jaxongir
+          Designed & Developed By Akbarali
         </p>
       </div>
     </aside>

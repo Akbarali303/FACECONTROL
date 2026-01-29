@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const { pool, initDatabase, closePool } = require('./database');
 const { loginUser, requireAuth, requireAdmin } = require('./auth');
+const { startBackupScheduler, stopBackupScheduler } = require('./backup');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -137,6 +138,53 @@ app.get('/api/session', (req, res) => {
     res.json({ success: true, user: req.session.user });
   } else {
     res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+});
+
+// ChatGPT proxy (API key faqat backendda .env da)
+app.post('/api/chat', requireAuth, async (req, res) => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ success: false, message: 'Chat xizmati sozlanmagan. OPENAI_API_KEY .env da kiriting.' });
+  }
+  try {
+    const { messages } = req.body || {};
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ success: false, message: 'messages massivi kerak' });
+    }
+    const system = { role: 'system', content: 'Siz foydalanuvchiga yordam beruvchi yordamchi. Qisqa va aniq javob bering. Kerak bo\'lsa o\'zbek tilida javob bering.' };
+    const body = {
+      model: process.env.OPENAI_CHAT_MODEL || 'gpt-3.5-turbo',
+      messages: [system, ...messages]
+    };
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (data.error) {
+      const msg = (data.error.message || '').toLowerCase();
+      const code = (data.error.code || '').toLowerCase();
+      let userMsg = data.error.message || 'OpenAI xatosi';
+      if (msg.includes('quota') || msg.includes('exceeded') || code === 'insufficient_quota') {
+        userMsg = 'ChatGPT limiti tugadi. OpenAI hisobingizda to\'lov (billing) qo\'shing yoki yangi API kalit oling: https://platform.openai.com/account/billing';
+      }
+      console.warn('[Chat] OpenAI error:', data.error.message);
+      return res.status(r.ok ? 500 : r.status).json({ success: false, message: userMsg });
+    }
+    const choice = data.choices && data.choices[0];
+    const content = choice ? (choice.message && choice.message.content) : null;
+    if (!content) {
+      return res.status(500).json({ success: false, message: 'Javob olinmadi' });
+    }
+    return res.json({ success: true, message: content });
+  } catch (err) {
+    console.error('[Chat] Error:', err.message);
+    return res.status(500).json({ success: false, message: err.message || 'Server xatosi' });
   }
 });
 
@@ -1198,25 +1246,21 @@ app.get('/api/time-settings', requireAuth, async (req, res) => {
               departureStartTime: settings.departure_start_time
             }
           });
-        } else {
-          // Return default values if no settings exist
-          return res.json({
-            success: true,
-            settings: {
-              onTimeThreshold: '09:10:00',
-              lateThreshold: '12:00:00',
-              absentThreshold: '13:00:00',
-              departureStartTime: '18:00:00'
-            }
-          });
         }
       } catch (err) {
         console.error('[API] Database error getting time settings:', err.message);
-        return res.status(500).json({ success: false, message: 'Database error' });
       }
     }
 
-    res.status(503).json({ success: false, message: 'Database not available' });
+    return res.json({
+      success: true,
+      settings: {
+        onTimeThreshold: '09:10:00',
+        lateThreshold: '12:00:00',
+        absentThreshold: '13:00:00',
+        departureStartTime: '18:00:00'
+      }
+    });
   } catch (err) {
     console.error('[API] Error getting time settings:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -1286,22 +1330,59 @@ app.put('/api/time-settings', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// Get attendance records endpoint
+// Get attendance records endpoint (supports single date or from/to range for history)
 app.get('/api/attendance', requireAuth, async (req, res) => {
   try {
-    const date = req.query.date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const limit = Math.min(parseInt(req.query.limit || '1000', 10), 5000);
+    const date = req.query.date;
+    const from = req.query.from;
+    const to = req.query.to;
+    const limit = Math.min(parseInt(req.query.limit || '2000', 10), 5000);
 
     if (!dbAvailable) {
       const ok = await checkDatabase();
       if (!ok) {
-        return res.status(503).json({ success: false, message: 'Database not available' });
+        const singleDate = date || new Date().toISOString().split('T')[0];
+        return res.json({ success: true, count: 0, date: singleDate, records: [] });
       }
     }
 
     try {
       const { pool } = require('./database');
-      const result = await pool.query(`
+      let result;
+      const rangeMode = from && to;
+
+      if (rangeMode) {
+        result = await pool.query(`
+          SELECT 
+            a.id,
+            a.user_id,
+            a.card_name,
+            a.arrival_time,
+            a.departure_time,
+            a.minutes_late,
+            a.status,
+            a.is_excused,
+            a.excuse_type,
+            a.date,
+            e.full_name,
+            e.position,
+            e.organization,
+            e.photo_url,
+            e.photo_base64
+          FROM attendance a
+          LEFT JOIN employees e ON a.user_id = e.user_id
+          WHERE a.date >= $1 AND a.date <= $2
+          ORDER BY a.date DESC,
+            CASE 
+              WHEN a.departure_time IS NOT NULL THEN a.departure_time
+              WHEN a.arrival_time IS NOT NULL THEN a.arrival_time
+              ELSE a.date
+            END DESC
+          LIMIT $3
+        `, [from, to, limit]);
+      } else {
+        const singleDate = date || new Date().toISOString().split('T')[0];
+        result = await pool.query(`
           SELECT 
             a.id,
             a.user_id,
@@ -1328,12 +1409,15 @@ app.get('/api/attendance', requireAuth, async (req, res) => {
               ELSE a.date
             END DESC
           LIMIT $2
-        `, [date, limit]);
+        `, [singleDate, limit]);
+      }
 
       return res.json({
         success: true,
         count: result.rows.length,
-        date: date,
+        date: rangeMode ? null : (date || new Date().toISOString().split('T')[0]),
+        from: rangeMode ? from : null,
+        to: rangeMode ? to : null,
         records: result.rows
       });
     } catch (err) {
@@ -1549,7 +1633,7 @@ app.put('/api/attendance/:id/excuse', requireAuth, requireAdmin, async (req, res
 app.get('/api/public/events', async (req, res) => {
   try {
     if (!dbAvailable) {
-      return res.status(503).json({ success: false, message: 'Database not available' });
+      return res.json({ success: true, count: 0, rows: [] });
     }
     const limit = Math.min(parseInt(req.query.limit || '500', 10), 2000);
 
@@ -2322,6 +2406,11 @@ async function startServer() {
       } catch (e) {
         console.error('[Dahua] Start failed:', e.message);
       }
+      try {
+        startBackupScheduler();
+      } catch (e) {
+        console.error('[Backup] Scheduler failed:', e.message);
+      }
     });
     
     // Store server reference for graceful shutdown
@@ -2365,6 +2454,12 @@ async function gracefulShutdown(signal) {
     }
   });
   sseClients.clear();
+
+  try {
+    stopBackupScheduler();
+  } catch (e) {
+    // ignore
+  }
   
   // Close database pool
   try {
