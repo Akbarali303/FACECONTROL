@@ -12,7 +12,7 @@ jobs:
       - name: Deploy to KPI server
         uses: appleboy/ssh-action@v1
         with:
-          host: 192.168.0.199
+          host: 93.188.80.86
           username: akbarali
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
