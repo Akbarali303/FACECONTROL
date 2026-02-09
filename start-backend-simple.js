@@ -245,7 +245,7 @@ app.post('/api/organizations', requireAuth, requireAdmin, async (req, res) => {
     if (!dbAvailable) {
       const ok = await checkDatabase();
       if (!ok) {
-        return res.status(503).json({ success: false, message: 'Database not available' });
+        return res.status(503).json({ success: false, message: DB_NOT_AVAILABLE_MSG });
       }
     }
 
@@ -264,7 +264,7 @@ app.post('/api/organizations', requireAuth, requireAdmin, async (req, res) => {
       }
       console.error('[API] Database error creating organization:', err.message);
       dbAvailable = false;
-      return res.status(500).json({ success: false, message: 'Database error' });
+      return res.status(500).json({ success: false, message: err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' ? DB_NOT_AVAILABLE_MSG : 'Database error' });
     }
   } catch (err) {
     console.error('[API] Error creating organization:', err);
@@ -677,7 +677,7 @@ app.put('/api/users/me', requireAuth, upload.single('photo'), async (req, res) =
 
     const userId = req.session.user.id;
     const { pool } = require('./database');
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
 
     // Get form data
     const { first_name, last_name, username, password, email, phone, address, birth_date } = req.body;
@@ -785,7 +785,7 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
       return res.status(503).json({ success: false, message: 'Database not available' });
     }
 
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const { pool } = require('./database');
@@ -1742,6 +1742,9 @@ app.get('/api/realtime', requireAuth, (req, res) => {
   });
 });
 
+// Foydalanuvchiga ko'rsatiladigan baza xabari (O'zbekcha)
+const DB_NOT_AVAILABLE_MSG = 'Bazaga ulanish yo\'q. PostgreSQL ishga tushiring va .env faylida DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS ni tekshiring.';
+
 // Check if database is available
 async function checkDatabase() {
   try {
@@ -1763,7 +1766,7 @@ checkDatabase().catch(() => {
 // Periodic DB recheck (har 60 soniyada) — DB qaytasa dbAvailable true bo‘ladi
 setInterval(() => {
   checkDatabase().catch(() => {});
-}, 60000);
+}, 15000);
 
 // Add event to ring buffer, database, and broadcast to SSE clients
 async function addEvent(event) {

@@ -101,7 +101,7 @@ async function initDatabase() {
     }
 
     // Create default admin user if not exists
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const adminPassword = await bcrypt.hash('admin123', 10);
 
     const checkAdmin = await pool.query('SELECT id FROM users WHERE username = $1', ['admin']);

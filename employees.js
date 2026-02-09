@@ -1,6 +1,7 @@
 const { pool } = require('./database');
 
-// Save or update employee from face control event
+// Save or update employee from face control event.
+// Bir odam uchun faqat bitta yozuv: avval user_id, keyin ism (card_name/full_name) bo'yicha tekshiramiz, takroriy INSERT qilmaymiz.
 async function saveEmployee(eventData) {
   try {
     const userId = eventData.UserID;
@@ -10,16 +11,17 @@ async function saveEmployee(eventData) {
       return null;
     }
 
-    // Check if employee exists
-    const existing = await pool.query(
+    const now = new Date();
+    const normalizedName = cardName && String(cardName).trim() ? String(cardName).trim().toLowerCase().replace(/\s+/g, ' ') : null;
+
+    // 1) Avval user_id bo'yicha topamiz
+    const existingByUserId = await pool.query(
       'SELECT id, total_visits FROM employees WHERE user_id = $1',
       [userId]
     );
 
-    const now = new Date();
-
-    if (existing.rows.length > 0) {
-      // Update existing employee (only update card_name if provided, keep other fields)
+    if (existingByUserId.rows.length > 0) {
+      // Mavjud xodim — faqat yangilaymiz (qayta INSERT yo'q)
       await pool.query(
         `UPDATE employees 
          SET card_name = COALESCE($1, card_name),
@@ -29,17 +31,48 @@ async function saveEmployee(eventData) {
          WHERE user_id = $3`,
         [cardName, now, userId]
       );
-      return existing.rows[0].id;
-    } else {
-      // Create new employee
-      const result = await pool.query(
-        `INSERT INTO employees (user_id, card_name, full_name, first_seen_at, last_seen_at, total_visits)
-         VALUES ($1, $2, $3, $4, $5, 1)
-         RETURNING id`,
-        [userId, cardName, cardName, now, now]
-      );
-      return result.rows[0].id;
+      return existingByUserId.rows[0].id;
     }
+
+    // 2) Yangi user_id — ism bo'yicha boshqa yozuv bormi? (bir odam = bitta yozuv, terminal boshqa ID bersa ham)
+    if (normalizedName) {
+      const existingByName = await pool.query(
+        `SELECT id, user_id, total_visits FROM employees 
+         WHERE (LOWER(TRIM(card_name)) = $1 OR LOWER(TRIM(full_name)) = $1)
+         LIMIT 1`,
+        [normalizedName]
+      );
+      if (existingByName.rows.length > 0) {
+        const row = existingByName.rows[0];
+        const oldUserId = row.user_id;
+        // Shu ismdagi yozuvni yangi terminal user_id ga bog'laymiz, yangi qator ochmaymiz
+        await pool.query(
+          `UPDATE employees 
+           SET user_id = $1,
+               card_name = COALESCE($2, card_name),
+               last_seen_at = $3,
+               total_visits = total_visits + 1,
+               updated_at = $3
+           WHERE id = $4`,
+          [userId, cardName, now, row.id]
+        );
+        // Eski user_id dagi davomat va eventlarni yangi user_id ga bog'laymiz
+        if (oldUserId && oldUserId !== userId) {
+          await pool.query('UPDATE attendance SET user_id = $1 WHERE user_id = $2', [userId, oldUserId]);
+          await pool.query('UPDATE events SET user_id = $1 WHERE user_id = $2', [userId, oldUserId]);
+        }
+        return row.id;
+      }
+    }
+
+    // 3) Hech qanday mos yozuv yo'q — yangi bitta yozuv (bir marta)
+    const result = await pool.query(
+      `INSERT INTO employees (user_id, card_name, full_name, first_seen_at, last_seen_at, total_visits)
+       VALUES ($1, $2, $3, $4, $5, 1)
+       RETURNING id`,
+      [userId, cardName, cardName, now, now]
+    );
+    return result.rows[0].id;
   } catch (err) {
     console.error('[Employees] Error saving employee:', err.message);
     return null;

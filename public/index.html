@@ -2431,8 +2431,22 @@
                 } else {
                     let lateCount = 0;
                     let absentCount = 0;
-
+                    // Tashkilot bo'yicha guruhlash — bitta tashkilot jurnalda bitta bob (bo'lim) sifatida
+                    const orgGroups = new Map();
                     for (const user of allUsers) {
+                        const org = (user.organization && String(user.organization).trim()) ? String(user.organization).trim() : 'Tashkilotsiz';
+                        if (!orgGroups.has(org)) orgGroups.set(org, []);
+                        orgGroups.get(org).push(user);
+                    }
+                    const sortedOrgNames = Array.from(orgGroups.keys()).sort((a, b) => (a === 'Tashkilotsiz' ? 1 : b === 'Tashkilotsiz' ? -1 : a.localeCompare(b)));
+                    const usersByOrg = sortedOrgNames.map(org => ({ org, users: orgGroups.get(org) }));
+
+                    for (const { org, users: orgUsers } of usersByOrg) {
+                        const bobHeaderRow = document.createElement('tr');
+                        bobHeaderRow.className = 'org-bob-header';
+                        bobHeaderRow.innerHTML = `<td colspan="13" class="org-bob-cell"><strong>${org}</strong> <span class="org-bob-count">(${orgUsers.length} xodim)</span></td>`;
+                        employeesBody.appendChild(bobHeaderRow);
+                        for (const user of orgUsers) {
                         if (user.isAbsent) {
                             absentCount++;
                         } else if (user.minutesLateToday > 0) {
@@ -2571,6 +2585,7 @@
                 `;
 
                         employeesBody.appendChild(row);
+                        }
                     }
 
                     if (usersLateEl) {
@@ -2805,23 +2820,20 @@
 
                 const ontimeCount = filteredUsers.filter(u => !u.isAbsent && u.minutesLateToday === 0).length;
                 const lateCount = filteredUsers.filter(u => !u.isAbsent && u.minutesLateToday > 0).length;
-                const absentCount = filteredUsers.filter(u => u.isAbsent === true).length;
-                const totalCame = filteredUsers.filter(u => !u.isAbsent).length;
+                const totalCame = ontimeCount + lateCount; // kelganlar (vaqtida + kechikdi)
 
-                // Kelganlar / jami xodimlar: jami = bazadagi barcha xodimlar soni
-                const totalAll = totalEmployeesCount > 0 ? totalEmployeesCount : filteredUsers.length;
-
-                const totalAbsent = absentCount;
-                const totalForChart = filteredUsers.length > 0 ? filteredUsers.length : 1;
+                // Doimiy jami = bazadagi barcha xodimlar soni (50 ta bo'lsa 50 ko'rsatiladi)
+                const totalAll = totalEmployeesCount > 0 ? totalEmployeesCount : (filteredUsers.length > 0 ? filteredUsers.length : 1);
 
                 const statTotalCameEl = document.getElementById('statTotalCame');
                 const statTotalAllEl = document.getElementById('statTotalAll');
                 if (statTotalCameEl) statTotalCameEl.textContent = String(totalCame);
                 if (statTotalAllEl) statTotalAllEl.textContent = String(totalAll);
 
-                const ontimePercent = totalForChart > 0 ? Math.round((ontimeCount / totalForChart) * 100) : 0;
-                const latePercent = totalForChart > 0 ? Math.round((lateCount / totalForChart) * 100) : 0;
-                const absentPercent = totalForChart > 0 ? Math.round((totalAbsent / totalForChart) * 100) : 0;
+                // Foizlar va grafik jami xodimlar (baza) soniga nisbatan: kelgan / kelmagan
+                const ontimePercent = totalAll > 0 ? Math.round((ontimeCount / totalAll) * 100) : 0;
+                const latePercent = totalAll > 0 ? Math.round((lateCount / totalAll) * 100) : 0;
+                const absentPercent = totalAll > 0 ? Math.round(((totalAll - totalCame) / totalAll) * 100) : 0;
 
                 // Update percentage displays
                 const statOntimePercentEl = document.getElementById('statOntimePercent');
@@ -2832,7 +2844,7 @@
                 if (statLatePercentEl) statLatePercentEl.textContent = String(latePercent);
                 if (statAbsentPercentEl) statAbsentPercentEl.textContent = String(absentPercent);
 
-                // Update arc chart paths based on percentages
+                // Grafikda kelgan (vaqtida + kechikdi) va kelmagan — jami xodimlar bo'yicha
                 updateArcChart(ontimePercent, latePercent, absentPercent);
             }
 
@@ -3604,11 +3616,11 @@
                         updateStatusCards(Array.from(users.values()));
                     }
 
-                    // Load history events from DB first to restore state
-                    await loadHistoryEvents();
-
-                    // Load all employees data and merge into existing users
+                    // Avval bazadagi jami xodimlar sonini yuklash (umumiy statistikada 50/50 ko'rinishi uchun)
                     await loadAllEmployees();
+
+                    // Load history events from DB to restore state
+                    await loadHistoryEvents();
                     
                     // Load today's attendance records for excuse status
                     await loadTodayAttendance();

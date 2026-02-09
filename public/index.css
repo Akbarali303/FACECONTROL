@@ -1338,6 +1338,21 @@ tr:last-child td {
     color: #6b7280;
 }
 
+/* Jurnal: tashkilot bo'yicha bitta bob (bo'lim) sarlavhasi */
+tr.org-bob-header td.org-bob-cell {
+    background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%);
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    border-top: 1px solid #93c5fd;
+    border-bottom: 1px solid #93c5fd;
+    color: #1e40af;
+}
+tr.org-bob-header .org-bob-count {
+    font-weight: normal;
+    color: #6b7280;
+    margin-left: 6px;
+}
+
 .error-message {
     background: linear-gradient(135deg, #fee 0%, #fdd 100%);
     color: #c33;
