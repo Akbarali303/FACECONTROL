@@ -187,6 +187,10 @@
                             </div>
                         </div>
                     </div>
+                    <div id="bazaStatus" style="display: flex; align-items: center; gap: 6px; margin-right: 8px; padding: 6px 10px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.8rem; color: #6b7280;" title="PostgreSQL baza holati">
+                        <span id="bazaDot" style="width: 8px; height: 8px; border-radius: 50%; background: #9ca3af;"></span>
+                        <span id="bazaText">Baza: —</span>
+                    </div>
                     <div class="sidebar-user-profile" id="userProfileBtn" onclick="openSuperAdminInfoModal()"
                         style="margin: 0; padding: 8px 12px; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px; box-sizing: border-box; cursor: pointer; transition: all 0.2s;"
                         onmouseover="this.style.borderColor='#10b981'; this.style.boxShadow='0 1px 3px rgba(16, 185, 129, 0.1)';"
@@ -250,7 +254,7 @@
                                     </div>
                                 </div>
                                 <div style="font-size: 0.9rem; font-weight: 600; color: #111827;">
-                                    <span id="statOntimePercent">0</span>%
+                                    <span id="statOntimePercent">0</span>
                                 </div>
                             </div>
                             <div
@@ -262,7 +266,7 @@
                                     <div style="font-size: 0.9rem; color: #111827; font-weight: 500;">Kechikdi</div>
                                 </div>
                                 <div style="font-size: 0.9rem; font-weight: 600; color: #111827;">
-                                    <span id="statLatePercent">0</span>%
+                                    <span id="statLatePercent">0</span>
                                 </div>
                             </div>
                             <div
@@ -274,7 +278,7 @@
                                     <div style="font-size: 0.9rem; color: #111827; font-weight: 500;">Kelmagan</div>
                                 </div>
                                 <div style="font-size: 0.9rem; font-weight: 600; color: #111827;">
-                                    <span id="statAbsentPercent">0</span>%
+                                    <span id="statAbsentPercent">0</span>
                                 </div>
                             </div>
                         </div>
@@ -1702,6 +1706,23 @@
                 }
             }
 
+            async function updateBazaStatus() {
+                const dot = document.getElementById('bazaDot');
+                const text = document.getElementById('bazaText');
+                if (!dot || !text) return;
+                try {
+                    const res = await fetch('/api/health', { credentials: 'include' });
+                    const data = await res.json();
+                    const db = data.db === true;
+                    const dbName = data.dbName || 'facecontrol';
+                    dot.style.background = db ? '#10b981' : '#9ca3af';
+                    text.textContent = db ? 'Baza: ' + dbName : 'Baza: uzilgan';
+                } catch (e) {
+                    dot.style.background = '#9ca3af';
+                    text.textContent = 'Baza: uzilgan';
+                }
+            }
+
             function extractField(data, path) {
                 if (!data || typeof data !== 'object') return '-';
                 const keys = path.split('.');
@@ -2029,7 +2050,7 @@
                 }
             }
 
-            // Load all employees data on page load (merge into existing users)
+            // Load all employees: barcha xodimlarni jadvalga qo'shamiz (kelgan/kechikdi/kelmagan filtri ishlashi uchun)
             async function loadAllEmployees() {
                 try {
                     const response = await fetch('/api/employees', {
@@ -2043,6 +2064,7 @@
                             result.employees.forEach(emp => {
                                 if (emp.user_id) employeeMap.set(emp.user_id, emp);
                             });
+                            // Mavjud userlarni yangilash (ism, lavozim, tashkilot va hokazo)
                             for (const [key, user] of users.entries()) {
                                 const emp = employeeMap.get(user.userId);
                                 if (emp) {
@@ -2059,6 +2081,42 @@
                                     }
                                     users.set(key, user);
                                 }
+                            }
+                            // Bazadagi har bir xodim jadvalda bo'lishi kerak (umumiy soni + vaqtida keldi/kechikdi/kelmagan filtri)
+                            for (const emp of result.employees) {
+                                const uid = emp.user_id;
+                                if (!uid) continue;
+                                const key = 'id:' + uid;
+                                if (users.has(key)) continue;
+                                let img = null;
+                                if (emp.photo_base64 && String(emp.photo_base64).length > 0) {
+                                    img = emp.photo_base64.startsWith('data:') ? emp.photo_base64 : `data:image/jpeg;base64,${emp.photo_base64}`;
+                                } else if (emp.photo_url && /^https?:\/\//i.test(emp.photo_url)) {
+                                    img = emp.photo_url;
+                                }
+                                users.set(key, {
+                                    key,
+                                    userId: uid,
+                                    name: emp.full_name || emp.card_name || 'Nomalum',
+                                    position: emp.position || '-',
+                                    organization: emp.organization || null,
+                                    department_name: emp.department_name || null,
+                                    phone: emp.phone || '-',
+                                    email: emp.email || '-',
+                                    imageUrl: img,
+                                    lastSeenAt: null,
+                                    lastArrivalTime: null,
+                                    lastDepartureTime: null,
+                                    hasDeparted: false,
+                                    minutesLateToday: 0,
+                                    isAbsent: true,
+                                    attendanceId: null,
+                                    isExcused: false,
+                                    excuseType: null,
+                                    onTimeCount: 0,
+                                    lateCount: 0,
+                                    totalVisits: 0
+                                });
                             }
                             renderEmployeesTable();
                         } else {
@@ -2346,13 +2404,16 @@
                             user.lastDepartureTime = nowIso;
                             user.hasDeparted = true;
                         }
+                        user.lastArrivalTime = user.lastArrivalTime || null;
                     } else {
+                        // Ertalab kelish: faqat kelish vaqti, ketish vaqtini ko'rsatma (birdan ketish deb yozilmasin)
                         if (!user.lastArrivalTime) {
                             user.lastArrivalTime = nowIso;
-                            user.hasDeparted = false;
-                            user.minutesLateToday = minutesLate;
-                            user.isAbsent = isAbsent;
                         }
+                        user.lastDepartureTime = null;
+                        user.hasDeparted = false;
+                        user.minutesLateToday = minutesLate;
+                        user.isAbsent = isAbsent;
                     }
                 }
 
@@ -2380,9 +2441,12 @@
             function renderEmployeesTable() {
                 if (!employeesBody) return;
 
-                let allUsers;
-                allUsers = Array.from(users.values());
-                allUsers = filterUsersByPeriod(allUsers, currentPeriod);
+                let allUsers = Array.from(users.values());
+                // Kunlik rejimda barcha xodimlar ko'rinsin (umumiy soni), holati: vaqtida keldi / kechikdi / kelmagan
+                if (currentPeriod !== 'daily') {
+                    allUsers = filterUsersByPeriod(allUsers, currentPeriod);
+                }
+                // Hammasi / Vaqtida keldi / Kechikdi / Kelmagan filtri
                 if (statusFilter !== 'all') {
                     allUsers = allUsers.filter(user => {
                         if (statusFilter === 'ontime') return !user.isAbsent && user.minutesLateToday === 0;
@@ -2830,21 +2894,21 @@
                 if (statTotalCameEl) statTotalCameEl.textContent = String(totalCame);
                 if (statTotalAllEl) statTotalAllEl.textContent = String(totalAll);
 
-                // Foizlar va grafik jami xodimlar (baza) soniga nisbatan: kelgan / kelmagan
-                const ontimePercent = totalAll > 0 ? Math.round((ontimeCount / totalAll) * 100) : 0;
-                const latePercent = totalAll > 0 ? Math.round((lateCount / totalAll) * 100) : 0;
-                const absentPercent = totalAll > 0 ? Math.round(((totalAll - totalCame) / totalAll) * 100) : 0;
+                // Aniq sonlar (foiz emas): vaqtida keldi, kechikdi, kelmagan
+                const absentCount = totalAll - totalCame;
 
-                // Update percentage displays
                 const statOntimePercentEl = document.getElementById('statOntimePercent');
                 const statLatePercentEl = document.getElementById('statLatePercent');
                 const statAbsentPercentEl = document.getElementById('statAbsentPercent');
 
-                if (statOntimePercentEl) statOntimePercentEl.textContent = String(ontimePercent);
-                if (statLatePercentEl) statLatePercentEl.textContent = String(latePercent);
-                if (statAbsentPercentEl) statAbsentPercentEl.textContent = String(absentPercent);
+                if (statOntimePercentEl) statOntimePercentEl.textContent = String(ontimeCount);
+                if (statLatePercentEl) statLatePercentEl.textContent = String(lateCount);
+                if (statAbsentPercentEl) statAbsentPercentEl.textContent = String(absentCount);
 
-                // Grafikda kelgan (vaqtida + kechikdi) va kelmagan — jami xodimlar bo'yicha
+                // Grafik uchun foizlar (doira bo'laklari)
+                const ontimePercent = totalAll > 0 ? Math.round((ontimeCount / totalAll) * 100) : 0;
+                const latePercent = totalAll > 0 ? Math.round((lateCount / totalAll) * 100) : 0;
+                const absentPercent = totalAll > 0 ? Math.round((absentCount / totalAll) * 100) : 0;
                 updateArcChart(ontimePercent, latePercent, absentPercent);
             }
 
@@ -3643,6 +3707,11 @@
 
                     // Connect for real-time updates
                     connect();
+                    // Baza holatini ko'rsatish va har 15 soniyada yangilash
+                    updateBazaStatus();
+                    setInterval(updateBazaStatus, 15000);
+                    // Xodimlar bo'limi ro'yxatini oldindan yuklash (bazasi ko'rinsin)
+                    loadEmployeesForManagement();
                 } else {
                     // Not authenticated, redirect to login
                     window.location.href = '/login.html';
@@ -3661,6 +3730,8 @@
                     persistUsersToStorage();
                 });
                 connect();
+                updateBazaStatus();
+                setInterval(updateBazaStatus, 15000);
             });
 
             // Organizations Management
@@ -4557,7 +4628,7 @@
                 });
             }
 
-            // Employees Management
+            // Employees Management — baza ro'yxatini yuklash
             async function loadEmployeesForManagement() {
                 try {
                     const response = await fetch('/api/employees', {
@@ -4566,12 +4637,18 @@
 
                     if (response.ok) {
                         const result = await response.json();
-                        if (result.success && result.employees) {
+                        if (result.success && Array.isArray(result.employees)) {
                             renderEmployeesManagement(result.employees);
+                        } else {
+                            renderEmployeesManagement([]);
                         }
+                    } else {
+                        const msg = response.status === 503 ? 'Bazaga ulanish yo\'q. PostgreSQL ishga tushiring.' : 'Ma\'lumotlarni yuklab bo\'lmadi.';
+                        renderEmployeesManagement([], msg);
                     }
                 } catch (err) {
                     console.error('Error loading employees:', err);
+                    renderEmployeesManagement([], 'Serverga ulanish xatosi. Qayta urinib ko\'ring.');
                 }
             }
 
@@ -4597,7 +4674,7 @@
                 return Math.max(17, Math.min(rowsThatFit - 1, 17)); // Target 17 rows
             }
 
-            function renderEmployeesManagement(employees) {
+            function renderEmployeesManagement(employees, errorMessage) {
                 const list = document.getElementById('employeesManagementList');
                 if (!list) return;
 
@@ -4605,7 +4682,8 @@
                 allEmployeesData = employees || [];
 
                 if (!employees || employees.length === 0) {
-                    list.innerHTML = '<tr><td colspan="9" style="padding: 40px; text-align: center; color: #94a3b8;"><div class="org-empty-state-icon">👤</div><div class="org-empty-state-text">Hozircha xodimlar mavjud emas</div></td></tr>';
+                    const text = errorMessage || 'Hozircha xodimlar mavjud emas';
+                    list.innerHTML = '<tr><td colspan="9" style="padding: 40px; text-align: center; color: #94a3b8;"><div class="org-empty-state-icon">👤</div><div class="org-empty-state-text">' + text + '</div></td></tr>';
                     if (typeof applyAdminOnlyVisibility === 'function') applyAdminOnlyVisibility();
                     return;
                 }

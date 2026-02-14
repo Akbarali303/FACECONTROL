@@ -196,7 +196,7 @@ async function saveAttendance(eventData, arrivalTime, minutesLate, isAbsent = fa
           );
         }
       } else {
-        // 00:00–18:00: nechi marta o'tishidan qat'iy nazar birinchi ro'yxatdan o'tgan = kelish. arrival_time bo'sh bo'lsa yangilash.
+        // 00:00–18:00: kelish — faqat arrival_time yangilash (departure_time ga tegmaymiz)
         if (!row.arrival_time) {
           await pool.query(
             `UPDATE attendance 

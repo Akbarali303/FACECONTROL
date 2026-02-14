@@ -31,7 +31,7 @@ timeout /t 5 /nobreak >nul
 
 :: 4) Backend (server) ni ishga tushirish
 echo [4] Backend ishga tushirilmoqda...
-echo     Brauzerda: http://localhost:3001
+echo     Brauzerda: http://localhost:3002
 echo     To'xtatish: Ctrl+C
 echo.
 cd /d "%~dp0"

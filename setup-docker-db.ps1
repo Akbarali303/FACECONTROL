@@ -246,7 +246,7 @@ if (-not $dbReady) {
 Write-Host ""
 Write-Host ".env faylini yaratish/yangilash..." -ForegroundColor Yellow
 
-$envContent = "DB_HOST=localhost`nDB_PORT=$DB_PORT`nDB_NAME=$DB_NAME`nDB_USER=$DB_USER`nDB_PASS=$DB_PASS`nPORT=3001`nDAHUA_IP=192.168.0.59`nDAHUA_USER=admin`nDAHUA_PASS=admin123`nSESSION_SECRET=facecontrol-secret-key-change-in-production"
+$envContent = "DB_HOST=localhost`nDB_PORT=$DB_PORT`nDB_NAME=$DB_NAME`nDB_USER=$DB_USER`nDB_PASS=$DB_PASS`nPORT=3002`nDAHUA_IP=192.168.0.59`nDAHUA_USER=admin`nDAHUA_PASS=admin123`nSESSION_SECRET=facecontrol-secret-key-change-in-production"
 
 if (Test-Path .env) {
     Write-Host "  .env fayli mavjud. Yangilashni xohlaysizmi? (y/n)" -ForegroundColor Yellow

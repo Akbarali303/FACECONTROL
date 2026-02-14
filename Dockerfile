@@ -15,7 +15,7 @@ RUN npm install --omit=dev
 COPY . .
 
 # backend port
-EXPOSE 3001
+EXPOSE 3002
 
 # start backend
 CMD ["node", "start-backend-simple.js"]

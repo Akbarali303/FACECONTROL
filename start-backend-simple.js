@@ -11,7 +11,7 @@ const { loginUser, requireAuth, requireAdmin } = require('./auth');
 const { startBackupScheduler, stopBackupScheduler } = require('./backup');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const DAHUA_IP = process.env.DAHUA_IP || '192.168.0.59';
 const DAHUA_USER = process.env.DAHUA_USER || 'admin';
 const DAHUA_PASS = process.env.DAHUA_PASS || 'admin123';
@@ -81,9 +81,17 @@ const webhookUpload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true });
+// Health check endpoint (baza holati ham qaytadi)
+app.get('/api/health', async (req, res) => {
+  let db = false;
+  let dbName = process.env.DB_NAME || 'facecontrol';
+  try {
+    await pool.query('SELECT 1');
+    db = true;
+  } catch (e) {
+    db = false;
+  }
+  res.json({ ok: true, db, dbName });
 });
 
 // Dahua Webhook endpoint (POST)

@@ -8,11 +8,12 @@ services:
     env_file:
       - .env
     environment:
+      - PORT=3002
       - DB_HOST=postgres
       - DB_PORT=5432
       - BACKUP_DIR=/app/backups
     ports:
-      - "3001:3001"
+      - "3002:3002"
     volumes:
       - backups_data:/app/backups
     depends_on:

@@ -31,7 +31,7 @@ npm run dev
 
 4. Open browser:
 ```
-http://localhost:3001
+http://localhost:3002
 ```
 
 ## GitHub Deployment
@@ -86,7 +86,7 @@ git push
 
 ## Environment Variables
 
-- `PORT` - Server port (default: 3001)
+- `PORT` - Server port (default: 3002)
 - `DAHUA_IP` - Dahua device IP address
 - `DAHUA_USER` - Dahua username
 - `DAHUA_PASS` - Dahua password

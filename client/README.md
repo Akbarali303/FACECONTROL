@@ -10,7 +10,7 @@ npm install
 npm run dev
 ```
 
-`http://localhost:5173` — Vite dev server. API `/api` va `/uploads` proxy orqali `http://localhost:3001` ga yuboriladi (backend ishlashi kerak).
+`http://localhost:5173` — Vite dev server. API `/api` va `/uploads` proxy orqali `http://localhost:3002` ga yuboriladi (backend ishlashi kerak).
 
 ## Build
 
