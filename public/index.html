@@ -2536,8 +2536,14 @@
                             .substring(0, 2)
                             .toUpperCase() || 'U';
 
-                        const timeToDisplay = user.lastArrivalTime || user.lastSeenAt;
-                        const dateForCell = timeToDisplay ? new Date(timeToDisplay).toISOString().split('T')[0] : null;
+                        const todayStr = getTodayStr();
+                        // Kunlik rejimda faqat bugungi kun: sana va vaqtlar bugunga tegishli bo'lsin
+                        let timeToDisplay = user.lastArrivalTime || user.lastSeenAt;
+                        if (currentPeriod === 'daily' && timeToDisplay) {
+                            const arrivalDateStr = new Date(timeToDisplay).toISOString().split('T')[0];
+                            if (arrivalDateStr !== todayStr) timeToDisplay = null;
+                        }
+                        const dateForCell = (currentPeriod === 'daily') ? todayStr : (timeToDisplay ? new Date(timeToDisplay).toISOString().split('T')[0] : null);
                         const arrivalDate = dateForCell
                             ? new Date(dateForCell + 'T12:00:00').toLocaleDateString('en-US', {
                                 year: 'numeric',
@@ -2554,6 +2560,19 @@
                                 second: '2-digit'
                             })
                             : '-';
+
+                        let departureTimeDisplay = '-';
+                        if (user.lastDepartureTime) {
+                            const depDateStr = new Date(user.lastDepartureTime).toISOString().split('T')[0];
+                            if (currentPeriod !== 'daily' || depDateStr === todayStr) {
+                                departureTimeDisplay = new Date(user.lastDepartureTime).toLocaleTimeString('en-US', {
+                                    hour12: false,
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                });
+                            }
+                        }
 
                         let lateText, lateBadgeClass;
                         if (user.isAbsent) {
@@ -2578,18 +2597,7 @@
                             photoCell = `<div class="user-photo-placeholder">${initials}</div>`;
                         }
 
-                        // Ketish vaqtini ko'rsatish
-                    let departureTimeDisplay = '-';
-                    if (user.lastDepartureTime) {
-                        departureTimeDisplay = new Date(user.lastDepartureTime).toLocaleTimeString('en-US', {
-                            hour12: false,
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                        });
-                    }
-
-                    // Status: kelgan = ptichka; kech/absent = Sababli / Sababsiz / Safarda tanlash
+                        // Status: kelgan = ptichka; kech/absent = Sababli / Sababsiz / Safarda tanlash
                     let excuseDropdown = '-';
                     const isAdmin = typeof isAdminUser === 'function' && isAdminUser();
                     const needsExcuse = user.isAbsent || user.minutesLateToday > 0;
